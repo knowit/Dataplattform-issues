@@ -1,41 +1,82 @@
 import boto3
 import random
 from boto3.dynamodb.conditions import Key
-
+from boto3.dynamodb.types import Decimal
 from datetime import datetime as dt
-
-
-def get_random_timestamp():
-    def to_byte_array(number: int, bytes: int):
-        return number.to_bytes(bytes, 'big')
-
-    time = int(dt.now().timestamp())
-    return to_byte_array((time << 64) + random.getrandbits(64), 16)
-
+import json
 
 client = boto3.resource("dynamodb")
 
 table = client.Table("dataplattform")
-time = int(dt.now().timestamp())
-table.put_item(
-    Item={
-        "type": "temp",
-        "timestamp_random": get_random_timestamp(),
-        "data": {
-            "haw": "yee"
-        },
-        "timestamp": time
+
+
+def get_timestamp_random(timestamp=None, random_value=None):
+    """
+    :param random_value: You can choose a specific value instead of generating a random one.
+    :param timestamp: A specific unix timestamp, keep None if you want to use current time.
+    :return: timestamp in bits appended with some random bits as a Binary.
+    """
+
+    def to_byte_array(number: int, bytes: int):
+        return number.to_bytes(bytes, 'big')
+
+    if timestamp is None:
+        timestamp = int(dt.now().timestamp())
+
+    if random_value is None:
+        random_value = random.getrandbits(64)
+
+    return to_byte_array((timestamp << 64) + random_value, 16)
+
+
+def get_range_timestamp_random(timestamp):
+    """
+    :param timestamp: Unix timestamp
+    :return: A range of possible values a timestamp can get from get_timestamp_random().
+    example output is [AAAAAF0I83cAAAAAAAAAAA==,
+    """
+
+    lowest = get_timestamp_random(timestamp, random_value=0)
+    highest = get_timestamp_random(timestamp, random_value=2 ** 64)
+    return [lowest, highest]
+
+
+def insert_doc(type, data=None, timestamp=None):
+    if timestamp is None:
+        timestamp = int(dt.now().timestamp())
+
+    item = {
+        "type": type,
+        "timestamp_random": get_timestamp_random(timestamp),
+        "timestamp": timestamp
     }
-)
+    if data is not None:
+        item["data"] = data
 
-print("Inserted")
+    table.put_item(
+        Item=item
+    )
 
-response = table.query(
-    KeyConditionExpression=Key('timestamp_random').lt(get_random_timestamp()) & Key('type').eq("temp"),
-)
-items = response['Items']
-# print(items)
-for i in items:
-    print(i)
-    if 'timestamp' in i:
-        print(int(i['timestamp']))
+    print("Inserted")
+
+
+def main():
+    f = open("example_data.json")
+    example_data = json.loads(f.read())
+    for example in example_data:
+        insert_doc(type=example["type"], data=example["data"], timestamp=example["timestamp"])
+
+    response = table.query(
+        KeyConditionExpression=Key('timestamp_random').lt(get_timestamp_random()) & Key('type').eq(
+            "temp"),
+    )
+    items = response['Items']
+    # print(items)
+    for i in items:
+        print(i)
+        if 'timestamp' in i:
+            print(int(i['timestamp']))
+
+
+if __name__ == '__main__':
+    main()

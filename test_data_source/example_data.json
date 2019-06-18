@@ -1,0 +1,72 @@
+[
+    {
+        "type": "temp",
+        "data": {
+            "temperature": 23
+        },
+        "timestamp": 1560868263
+    },
+    {
+        "type": "temp",
+        "data": {
+            "temperature": 22
+        },
+        "timestamp": 1560868203
+    },
+    {
+        "type": "temp",
+        "data": {
+            "temperature": 20
+        },
+        "timestamp": 1560868163
+    },
+    {
+        "type": "temp",
+        "data": {
+            "temperature": 21
+        },
+        "timestamp": 1560868003
+    },
+    {
+        "type": "temp",
+        "data": {
+            "temperature": 23
+        },
+        "timestamp": 1560867963
+    },
+    {
+        "type": "temp",
+        "data": {
+            "temperature": 20
+        },
+        "timestamp": 1560867903
+    },
+    {
+        "type": "temp",
+        "data": {
+            "temperature": 19
+        },
+        "timestamp": 1560867853
+    },
+    {
+        "type": "temp",
+        "data": {
+            "temperature": 23
+        },
+        "timestamp": 1560867803
+    },
+    {
+        "type": "temp",
+        "data": {
+            "temperature": 25
+        },
+        "timestamp": 1560867753
+    },
+    {
+        "type": "temp",
+        "data": {
+            "temperature": 28
+        },
+        "timestamp": 1560867703
+    }
+]
