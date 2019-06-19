@@ -32,7 +32,6 @@ def get_range_timestamp_random(timestamp: int):
     """
     :param timestamp: Unix timestamp
     :return: A range of possible values a timestamp can get from get_timestamp_random().
-    example output is [AAAAAF0I83cAAAAAAAAAAA==,
     """
 
     lowest = get_timestamp_random(timestamp, random_value=0)
@@ -59,6 +58,24 @@ def insert_doc(type, data=None, timestamp=None):
     print("Inserted")
 
 
+def get_docs(type, timestamp_from=0, timestamp_to=2147483647):
+    """
+    :param type: Which type of documents should be fetched.
+    :param timestamp_from: Start unix time. Default 0
+    :param timestamp_to: end unix time. Default 2147483647
+    :return: A list of all documents found.
+    """
+    lower_value = get_range_timestamp_random(timestamp_from)[0]
+    upper_value = get_range_timestamp_random(timestamp_to)[1]
+
+    response = table.query(
+        KeyConditionExpression=Key('timestamp_random').between(lower_value, upper_value) & Key(
+            'type').eq(type),
+    )
+    items = response['Items']
+    return items
+
+
 def main():
     f = open("example_data.json")
     example_data = json.loads(f.read())
@@ -66,16 +83,9 @@ def main():
     for example in example_data:
         insert_doc(type=example["type"], data=example["data"], timestamp=example["timestamp"])
 
-    response = table.query(
-        KeyConditionExpression=Key('timestamp_random').lt(get_timestamp_random()) & Key('type').eq(
-            "temp"),
-    )
-    items = response['Items']
-    # print(items)
-    for i in items:
-        print(i)
-        if 'timestamp' in i:
-            print(int(i['timestamp']))
+    docs = get_docs("temp", timestamp_from=1560867713, timestamp_to=1560867903)
+    for doc in docs:
+        print(doc["timestamp"])
 
 
 if __name__ == '__main__':
