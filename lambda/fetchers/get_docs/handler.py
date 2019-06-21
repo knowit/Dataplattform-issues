@@ -1,9 +1,8 @@
 import boto3
-import random
-from datetime import datetime as dt
 from boto3.dynamodb.conditions import Key
 import json
 import base64
+import timestamp_random as tr
 
 
 def lambda_handler(event, context):
@@ -48,11 +47,11 @@ def get_docs(table, data_type, timestamp_from, timestamp_to):
     :param table: DynamoDB table.
     :param data_type: Which type of documents should be fetched.
     :param timestamp_from: Start unix time.
-    :param timestamp_to: end unix time. 
+    :param timestamp_to: end unix time.
     :return: A list of all documents found.
     """
-    lower_value = get_range_timestamp_random(timestamp_from)[0]
-    upper_value = get_range_timestamp_random(timestamp_to)[1]
+    lower_value = tr.get_range_timestamp_random(timestamp_from)[0]
+    upper_value = tr.get_range_timestamp_random(timestamp_to)[1]
 
     response = table.query(
         KeyConditionExpression=Key('timestamp_random').between(lower_value, upper_value) & Key(
@@ -60,33 +59,3 @@ def get_docs(table, data_type, timestamp_from, timestamp_to):
     )
     items = response['Items']
     return items
-
-
-def get_timestamp_random(timestamp=None, random_value=None):
-    """
-    :param random_value: You can choose a specific value instead of generating a random one.
-    :param timestamp: A specific unix timestamp, keep None if you want to use current time.
-    :return: timestamp in bits appended with some random bits as a Binary.
-    """
-
-    def to_byte_array(number: int, bytes: int = 16):
-        return number.to_bytes(bytes, 'big')
-
-    if timestamp is None:
-        timestamp = int(dt.now().timestamp())
-
-    if random_value is None:
-        random_value = random.getrandbits(64)
-
-    return to_byte_array((timestamp << 64) + random_value, 16)
-
-
-def get_range_timestamp_random(timestamp: int):
-    """
-    :param timestamp: Unix timestamp
-    :return: A range of possible values a timestamp can get from get_timestamp_random().
-    """
-
-    lowest = get_timestamp_random(timestamp, random_value=0)
-    highest = get_timestamp_random(timestamp + 1, random_value=0)
-    return lowest, highest

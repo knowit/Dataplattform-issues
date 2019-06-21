@@ -104,3 +104,6 @@ venv.bak/
 .mypy_cache/
 
 .idea/
+
+# Compiled zip modules.
+lambda/layers/*.zip
