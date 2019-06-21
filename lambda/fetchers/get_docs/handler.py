@@ -36,9 +36,13 @@ def docs_to_json(docs):
     :return: Convert boto types to regular ints and strings and then parse every doc to json.
     """
     for doc in docs:
-        doc["timestamp_random"] = str(base64.b64encode(doc["timestamp_random"].value))
+        doc["id"] = base64.b64encode(doc["timestamp_random"].value).decode("utf-8")
+        del doc["timestamp_random"]
         doc["timestamp"] = int(doc["timestamp"])
-        doc["data"] = json.loads(doc["data"])
+        if "data" in doc:
+            doc["data"] = json.loads(doc["data"])
+        else:
+            doc["data"] = {}
     return docs
 
 
