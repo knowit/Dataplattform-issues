@@ -5,7 +5,7 @@ Det første du må gjøre er å lage et layer som du kan kalle for ```timestamp_
 
 
 ## Ingest API lambda
-Koden for ingest-lambdaen ligger i ```ingest/```. Denne trenger ```timestamp_random```-layeret. 
+Koden for ingest-lambdaen ligger i ```ingest/```. Denne trenger ```timestamp_random```-layeret. AWS-rollen denne kjører i trenger også tilgang til ```PutItem``` for DynamoDB-tabellen som blir brukt.
 
 
 ## API lambdas for fetching

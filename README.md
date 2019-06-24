@@ -6,7 +6,14 @@
   * ```test_data_source/```
       * Blir brukt for manuell testing.
 
-### Disse datakildene inneholder persondata:
+## Oppsett
+Se ```lambda/``` for oppsett av lambda-funksjoner i AWS.
+### DynamoDB i AWS
+  * Lag et DynamoDB table med navn ```dataplattform```
+      * Partition key ```type``` (String)
+      * Sort key ```timestamp_random``` (Binary)
+
+## Disse datakildene inneholder persondata:
   * github
       * Github har sensitiv informasjon, her blir det lagret både navn, e-post addresse og commit-melding. 
   * slack
