@@ -107,3 +107,4 @@ venv.bak/
 
 # Compiled zip modules.
 lambda/layers/*.zip
+**.swp
