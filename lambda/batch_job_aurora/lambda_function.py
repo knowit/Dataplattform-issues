@@ -78,7 +78,8 @@ def fetch_data_url(url):
     :param url: URL for get_docs API
     :return: list of docs fetched from get_docs API.
     """
-    req = urllib.request.Request(url)
+    fetch_key = os.getenv("DATAPLATTFORM_AURORA_FETCH_KEY")
+    req = urllib.request.Request(url, headers={"x-api-key": fetch_key})
     response = urllib.request.urlopen(req)
     return json.loads(response.read().decode())
 
