@@ -11,6 +11,7 @@ const int pin_btn3 = 19;
 const char* ssid = "ssid";
 const char* password = "pwd";
 const char* url = "";
+const char* ingest_api_key = "apikey";
 
 const char* post1 = "{\"button\": -1}";
 const char* post2 = "{\"button\": 0 }";
@@ -55,6 +56,7 @@ void loop() {
             HTTPClient http;
             http.begin(url);
             http.addHeader("Content-Type", "application/json");
+            http.addHeader("x-api-key", ingest_api_key);
 
             int response = 0;
             if (btn1) {
@@ -67,7 +69,7 @@ void loop() {
                 response = http.POST(post3);
             }
             digitalWrite(pin_b, LOW);
-            if (response > 0) {
+            if (response >= 200 && response < 300) {
                 digitalWrite(pin_g, HIGH);
                 Serial.println(response);
                 Serial.println(http.getString());
