@@ -4,14 +4,18 @@
 const int pin_r = 4;
 const int pin_g = 16;
 const int pin_b = 17;
-const int pin_btn = 5;
+const int pin_btn1 = 5;
 const int pin_btn2 = 18;
+const int pin_btn3 = 19;
 
 const char* ssid = "ssid";
-const char* password = "pin";
+const char* password = "pwd";
 const char* url = "";
 
-// the setup function runs once when you press reset or power the board
+const char* post1 = "{\"button\": -1}";
+const char* post2 = "{\"button\": 0 }";
+const char* post3 = "{\"button\": 1 }";
+
 void setup() {
     Serial.begin(115200);
     delay(20);
@@ -32,20 +36,19 @@ void setup() {
     Serial.println("IP address: ");
     Serial.println(WiFi.localIP());
 
-    // initialize digital pin ledPin as an output.
     pinMode(pin_r, OUTPUT);
     pinMode(pin_g, OUTPUT);
     pinMode(pin_b, OUTPUT);
-    pinMode(pin_btn, INPUT);
+    pinMode(pin_btn1, INPUT);
     pinMode(pin_btn2, INPUT);
+    pinMode(pin_btn3, INPUT);
 }
 
-// the loop function runs over and over again forever
 void loop() {
-    int btn_state = digitalRead(pin_btn);
-    //Serial.print("Button: ");
-    //Serial.println(btn_state);
-    if (btn_state == HIGH) {
+    int btn1 = digitalRead(pin_btn1);
+    int btn2 = digitalRead(pin_btn2);
+    int btn3 = digitalRead(pin_btn3);
+    if (btn1 | btn2 | btn3) {
         if (WiFi.status() == WL_CONNECTED) {
             digitalWrite(pin_r, LOW);
             digitalWrite(pin_b, HIGH);
@@ -53,7 +56,16 @@ void loop() {
             http.begin(url);
             http.addHeader("Content-Type", "application/json");
 
-            int response = http.POST("{}");
+            int response = 0;
+            if (btn1) {
+                response = http.POST(post1);
+            }
+            else if (btn2) {
+                response = http.POST(post2);
+            }
+            else if (btn3) {
+                response = http.POST(post3);
+            }
             digitalWrite(pin_b, LOW);
             if (response > 0) {
                 digitalWrite(pin_g, HIGH);
