@@ -202,15 +202,6 @@ Example of a Github doc in raw format:
     "id": "AAAAAF0Qp79lNx8dkdk1qQ=="
 }
 
-Example of how the SQL table should look like:
-
-CREATE TABLE GithubType (
-    id VARCHAR(24) NOT NULL,
-    timestamp BIGINT NOT NULL,
-    commit_id TEXT,
-    PRIMARY KEY (id)
-);
-
 """
 
 
@@ -219,9 +210,26 @@ class GithubType(AbstractType):
     Example: if you want to keep ["data"]["commits"][0]["id"] and save it as commit_id
     You could use this configure the attributes_keep dictionary like this:
     attributes_keep = {
-        "commit_id": ["data", "commits", 0, "id"]
+        ("commit_id", str): ["data", "commits", 0, "id"]
     }
+
+    Example of how the SQL table should look like then:
+
+    CREATE TABLE GithubType (
+        id VARCHAR(24) NOT NULL,
+        timestamp BIGINT NOT NULL,
+        commit_id TEXT,
+        PRIMARY KEY (id)
+    );
     """
     attributes_keep = {
-        "commit_id": ["data", "commits", 0, "id"]
+        ("repository_name", str): ["data", "repository", "full_name"],
+        ("github_username", str): ["data", "sender", "login"],
+        ("commit_id", str): ["data", "head_commit", "id"],
+        ("commit_timestamp", str): ["data", "head_commit", "timestamp"],
+        ("stargazers_count", int): ["data", "repository", "stargazers_count"],
+        ("language", str): ["data", "repository", "language"],
+        ("forks_count", int): ["data", "repository", "forks_count"],
+        ("open_issues_count", int): ["data", "repository", "open_issues_count"],
+        ("ref", str): ["data", "ref"]
     }

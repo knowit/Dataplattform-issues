@@ -23,7 +23,7 @@ def lambda_handler(event, context):
     }
 
 
-def get_relevant_attrs(docs, type):
+def get_relevant_attrs(docs, type, sql_connection):
     """
     :param docs: Raw documents from get_docs API.
     :param type: which datatype this is.
@@ -36,10 +36,38 @@ def get_relevant_attrs(docs, type):
     data_type_class = getattr(mod, type)
     data_type_object = data_type_class()
 
+    # To make sure that we are able to insert records into the SQL table we run this now.
+    check_table_exists(sql_connection, type, data_type_object)
+
     for doc in docs:
         column_values = data_type_object.get_column_values(doc)
         output.append(column_values)
     return output
+
+
+def check_table_exists(sql_connection, table_name, data_type_object):
+    """
+    This method checks if a table with name <table_name> already exists or not. If it doesn't
+    then it will create a new table.
+    :param sql_connection: A MySQL connection.
+    :param table_name: Which table should be checked.
+    :return:
+    """
+    # TODO: If the table exists it should check if all the columns are correct.
+    cur = sql_connection.cursor()
+    test_sql_query = "SELECT 1 FROM " + table_name + " LIMIT 1;"
+
+    exists = True
+
+    try:
+        cur.execute(test_sql_query)
+    except pymysql.err.ProgrammingError:
+        exists = False
+        print("No table found, will create new.")
+
+    if not exists:
+        sql = data_type_object.get_create_table_sql(table_name)
+        cur.execute(sql)
 
 
 def insert_data_into_db(sql_connection, datas, type):
@@ -62,10 +90,12 @@ def insert_data_into_db(sql_connection, datas, type):
 
         params = ", ".join(param_list)
         columns = ", ".join(column_list)
-
         sql = "INSERT INTO `" + type + "` (" + columns + ") VALUES (" + params + ");"
-        res = cursor.execute(sql, data)
-        counter += res
+        try:
+            res = cursor.execute(sql, data)
+            counter += res
+        except pymysql.err.IntegrityError:
+            print("Duplicate ID, skipping.")
 
     sql_connection.commit()
     sql_connection.close()
@@ -100,7 +130,7 @@ def main(types):
     for type in types:
         url = base_url + type
         docs = fetch_data_url(url)
-        sql_format = get_relevant_attrs(docs, type)
+        sql_format = get_relevant_attrs(docs, type, connection)
         n_records = insert_data_into_db(connection, sql_format, type)
         counter += n_records
     return counter

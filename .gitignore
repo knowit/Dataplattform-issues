@@ -106,4 +106,4 @@ venv.bak/
 .idea/
 
 # Compiled zip modules.
-lambda/layers/*.zip
+**.zip
