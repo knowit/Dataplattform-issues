@@ -19,7 +19,7 @@ def lambda_handler(event, context):
     counter = main(types)
     return {
         'statusCode': 200,
-        'body': json.dumps(counter + " records successfully inserted into Aurora.")
+        'body': json.dumps(str(counter) + " records successfully inserted into Aurora.")
     }
 
 
