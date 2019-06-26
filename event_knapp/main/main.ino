@@ -21,6 +21,13 @@ void setup() {
     Serial.begin(115200);
     delay(20);
 
+    pinMode(pin_r, OUTPUT);
+    pinMode(pin_g, OUTPUT);
+    pinMode(pin_b, OUTPUT);
+    pinMode(pin_btn1, INPUT);
+    pinMode(pin_btn2, INPUT);
+    pinMode(pin_btn3, INPUT);
+
     Serial.println("Startup");
     Serial.print("Connecting to ");
     Serial.println(ssid);
@@ -28,21 +35,20 @@ void setup() {
     WiFi.begin(ssid, password);
 
     while (WiFi.status() != WL_CONNECTED) {
-        delay(500);
         Serial.print(".");
+        digitalWrite(pin_b, HIGH);
+        delay(250);
+        digitalWrite(pin_b, LOW);
+        delay(250);
     }
 
     Serial.println("");
     Serial.println("WiFi connected");
     Serial.println("IP address: ");
     Serial.println(WiFi.localIP());
-
-    pinMode(pin_r, OUTPUT);
-    pinMode(pin_g, OUTPUT);
-    pinMode(pin_b, OUTPUT);
-    pinMode(pin_btn1, INPUT);
-    pinMode(pin_btn2, INPUT);
-    pinMode(pin_btn3, INPUT);
+    digitalWrite(pin_g, HIGH);
+    delay(1000);
+    digitalWrite(pin_g, LOW);
 }
 
 void loop() {
@@ -77,6 +83,7 @@ void loop() {
                 digitalWrite(pin_r, HIGH);
                 Serial.print("Error on POST: ");
                 Serial.println(response);
+                Serial.println(http.getString());
             }
             http.end();
             delay(1000);
