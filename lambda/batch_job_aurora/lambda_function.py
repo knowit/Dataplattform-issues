@@ -10,16 +10,24 @@ inserts that information into an aurora db.
 
 # These types will be used if no other types are provided.
 DEFAULT_TYPES = ["GithubType", "EventRatingType"]
+DEFAULT_TIMESTAMP_FROM = 0
+DEFAULT_TIMESTAMP_TO = 2147483647
 
 
 def lambda_handler(event, context):
-    # these types should have the same name as the module in the data_types/ folder.
-    # TODO: fix timestamp_from and timestamp_to
     types = DEFAULT_TYPES
     if "types" in event:
         types = event["types"]
 
-    counter = main(types)
+    timestamp_from = DEFAULT_TIMESTAMP_FROM
+    if "timestamp_from" in event:
+        timestamp_from = event["timestamp_from"]
+
+    timestamp_to = DEFAULT_TIMESTAMP_TO
+    if "timestamp_to" in event:
+        timestamp_to = event["timestamp_to"]
+
+    counter = main(types, timestamp_from, timestamp_to)
     return {
         'statusCode': 200,
         'body': json.dumps(str(counter) + " records successfully inserted into Aurora.")
@@ -98,7 +106,7 @@ def insert_data_into_db(sql_connection, datas, type):
             res = cursor.execute(sql, data)
             counter += res
         except pymysql.err.IntegrityError:
-            print("Duplicate ID, skipping.")
+            print("ID: " + data["id"] + " is a duplicate, skipping.")
 
     sql_connection.commit()
 
@@ -116,7 +124,15 @@ def fetch_data_url(url):
     return json.loads(response.read().decode())
 
 
-def main(types):
+def format_url(base_url, type, timestamp_from, timestamp_to):
+    """
+    :return: A formatted url.
+    """
+    return base_url + type + "?timestamp_from" + str(timestamp_from) \
+           + "&timestamp_to=" + str(timestamp_to)
+
+
+def main(types, timestamp_from, timestamp_to):
     base_url = os.getenv("DATAPLATTFORM_AURORA_FETCH_API_URL")
 
     connection = pymysql.connect(
@@ -130,7 +146,7 @@ def main(types):
     counter = 0
 
     for type in types:
-        url = base_url + type
+        url = format_url(base_url, type, timestamp_from, timestamp_to)
         docs = fetch_data_url(url)
         sql_format = get_relevant_attrs(docs, type, connection)
         n_records = insert_data_into_db(connection, sql_format, type)
@@ -140,5 +156,5 @@ def main(types):
 
 
 if __name__ == '__main__':
-    number_of_recs_inserted = main(DEFAULT_TYPES)
+    number_of_recs_inserted = main(DEFAULT_TYPES, DEFAULT_TIMESTAMP_FROM, DEFAULT_TIMESTAMP_TO)
     print("Number of records inserted", number_of_recs_inserted)

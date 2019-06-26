@@ -9,6 +9,8 @@ For å bruke lambdaen så kan du lage en test og i test-dataen som blir sendt ha
   "types": [
     "GithubType",
     "EventRatingType"
-  ]
+  ],
+  "timestamp_from": 0,
+  "timestamp_to": 100000000000
 }
 ```
