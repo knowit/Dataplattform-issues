@@ -8,13 +8,16 @@ This lambda gets raw data from the get_docs API and extracts only the valueable 
 inserts that information into an aurora db. 
 """
 
+# These types will be used if no other types are provided.
+DEFAULT_TYPES = ["GithubType", "EventRatingType"]
+
 
 def lambda_handler(event, context):
-    # TODO: Which types should be fetched, in the future this should be a parameter for the
-    #  lambda api.
     # these types should have the same name as the module in the data_types/ folder.
     # TODO: fix timestamp_from and timestamp_to
-    types = ["GithubType"]
+    types = DEFAULT_TYPES
+    if "types" in event:
+        types = event["types"]
 
     counter = main(types)
     return {
@@ -98,7 +101,6 @@ def insert_data_into_db(sql_connection, datas, type):
             print("Duplicate ID, skipping.")
 
     sql_connection.commit()
-    sql_connection.close()
 
     return counter
 
@@ -133,9 +135,10 @@ def main(types):
         sql_format = get_relevant_attrs(docs, type, connection)
         n_records = insert_data_into_db(connection, sql_format, type)
         counter += n_records
+    connection.close()
     return counter
 
 
 if __name__ == '__main__':
-    number_of_recs_inserted = main(["GithubType"])
+    number_of_recs_inserted = main(DEFAULT_TYPES)
     print("Number of records inserted", number_of_recs_inserted)
