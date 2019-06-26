@@ -223,7 +223,5 @@ class GithubType(AbstractType):
     }
     """
     attributes_keep = {
-        "commit_id": ["data", "commits", 0, "id"],
-        "timestamp": ["timestamp"],
-        "id": ["id"]
+        "commit_id": ["data", "commits", 0, "id"]
     }

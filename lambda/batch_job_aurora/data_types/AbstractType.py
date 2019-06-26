@@ -1,4 +1,12 @@
 class AbstractType:
+    attributes_keep_default = {
+        "id": ["id"],
+        "timestamp": ["timestamp"]
+    }
+
+    def __init__(self):
+        self.attributes_keep["id"] = self.attributes_keep_default["id"]
+        self.attributes_keep["timestamp"] = self.attributes_keep_default["timestamp"]
 
     def get_column_values(self, doc):
         """
