@@ -67,11 +67,9 @@ void loop() {
             int response = 0;
             if (btn1) {
                 response = http.POST(post1);
-            }
-            else if (btn2) {
+            } else if (btn2) {
                 response = http.POST(post2);
-            }
-            else if (btn3) {
+            } else if (btn3) {
                 response = http.POST(post3);
             }
             digitalWrite(pin_b, LOW);
