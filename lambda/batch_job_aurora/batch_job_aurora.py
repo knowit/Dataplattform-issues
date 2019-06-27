@@ -128,7 +128,7 @@ def format_url(base_url, type, timestamp_from, timestamp_to):
     """
     :return: A formatted url.
     """
-    return base_url + type + "?timestamp_from" + str(timestamp_from) \
+    return base_url + type + "?timestamp_from=" + str(timestamp_from) \
            + "&timestamp_to=" + str(timestamp_to)
 
 
