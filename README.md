@@ -3,8 +3,6 @@
 ## Mappestruktur
   * ```lambda/```
       * Denne inneholder alle lambda-funksjonene som ble skrevet for AWS lambda.
-  * ```test_data_source/```
-      * Blir brukt for manuell testing.
 
 ## Oppsett
 Se ```lambda/``` for oppsett av lambda-funksjoner i AWS.
