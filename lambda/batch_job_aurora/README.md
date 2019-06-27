@@ -14,3 +14,12 @@ For å bruke lambdaen så kan du lage en test og i test-dataen som blir sendt ha
   "timestamp_to": 100000000000
 }
 ```
+
+For å kjøre denne lambdaen så trenger du disse environment keysene:
+```DATAPLATTFORM_AURORA_FETCH_API_URL``` er URLen til der du henter rå data, så APIet til get_docs.  
+```DATAPLATTFORM_AURORA_FETCH_KEY``` er api-keyen som man trenger for å hente ut data fra APIet til get_docs.  
+```DATAPLATTFORM_AURORA_HOST``` er host til Aurora databasen.  
+```DATAPLATTFORM_AURORA_PORT``` er porten til Aurora db.  
+```DATAPLATTFORM_AURORA_DB_NAME``` er navnet til Aurora db.  
+```DATAPLATTFORM_AURORA_USER``` er brukernavnet til en user på Aurora db.  
+```DATAPLATTFORM_AURORA_PASSWORD``` er passordet til Aurora db.  
