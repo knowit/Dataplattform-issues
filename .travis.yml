@@ -2,6 +2,6 @@ language: python
 python:
   - '3.7'
 install:
-  - cd lambda && sh setup.sh
+  - cd lambda && sh install_reqs.sh
 script:
   - pytest
