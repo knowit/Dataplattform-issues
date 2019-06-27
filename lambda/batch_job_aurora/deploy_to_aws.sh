@@ -11,5 +11,6 @@ cd venv/lib/python3.6/site-packages
 zip -r9 ${OLDPWD}/batch_job_aurora.zip .
 cd $OLDPWD
 zip -g batch_job_aurora.zip lambda_function.py
+zip -g batch_job_aurora.zip batch_job_aurora.py
 zip -g batch_job_aurora.zip data_types -r9
 aws lambda update-function-code --function-name dataplattform_batch_job_aurora --zip-file fileb://batch_job_aurora.zip
