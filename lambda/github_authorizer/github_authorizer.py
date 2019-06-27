@@ -14,7 +14,7 @@ def handler(event, context):
             'statusCode': 403,
             'body': json.dumps({"reason": "No signature"})
         }
-    received_signature = event["headers"]["X-Hub-Signature"]
+    received_signature = headers["X-Hub-Signature"]
     if validate_payload_signature(body, received_signature):
         response = post_to_ingest_api(body)
         return {
@@ -37,7 +37,7 @@ def post_to_ingest_api(body):
         response = urllib.request.urlopen(request)
         return response.getcode()
     except urllib.request.HTTPError:
-        return 403
+        return 500
 
 
 def validate_payload_signature(body, received_signature):
