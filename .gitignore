@@ -104,6 +104,7 @@ venv.bak/
 .mypy_cache/
 
 .idea/
+**.swp
 
 # Compiled zip modules.
 **.zip

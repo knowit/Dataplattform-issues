@@ -3,6 +3,8 @@
 ## Mappestruktur
   * ```lambda/```
       * Denne inneholder alle lambda-funksjonene som ble skrevet for AWS lambda.
+  * ```event_knapp/```
+      * Kode for fysisk feedback-knapp
 
 ## Oppsett
 Se ```lambda/``` for oppsett av lambda-funksjoner i AWS.
