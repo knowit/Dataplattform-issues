@@ -89,24 +89,24 @@ def test_get_column_values():
     assert "ref" not in column_values
 
 
-def test_fetch_slack_name_cached():
+def test_get_slack_name_cached():
     # Create a fake user with a fake user dictionary.
     SlackType.slack_user_id_to_user_info["123123"] = {
         "user": {"profile": {"real_name": "Full name example"}}}
-    cached_name = SlackType.fetch_slack_name({"data": {"event": {"user": "123123"}}})
+    cached_name = SlackType.get_slack_name({"data": {"event": {"user": "123123"}}})
     assert cached_name == "Full name example"
 
 
-def test_fetch_slack_username_cached():
+def test_get_slack_username_cached():
     # Create a fake user with a fake user dictionary.
     SlackType.slack_user_id_to_user_info["123124"] = {"user": {"name": "username_test"}}
-    cached_username = SlackType.fetch_slack_username({"data": {"event": {"user": "123124"}}})
+    cached_username = SlackType.get_slack_username({"data": {"event": {"user": "123124"}}})
     assert cached_username == "username_test"
 
 
-def test_fetch_slack_channel_cached():
+def test_get_slack_channel_cached():
     # Create a fake channel with a fake user dictionary.
     SlackType.slack_channel_id_to_channel_info["channel123"] = {
         "channel": {"name": "Epic Channel name"}}
-    cached_channel = SlackType.fetch_slack_channel({"data": {"event": {"channel": "channel123"}}})
+    cached_channel = SlackType.get_slack_channel({"data": {"event": {"channel": "channel123"}}})
     assert cached_channel == "Epic Channel name"

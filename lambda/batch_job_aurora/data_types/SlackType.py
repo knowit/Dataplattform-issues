@@ -54,7 +54,7 @@ def fetch_slack_user_info(user_id):
     slack_user_id_to_user_info[user_id] = user
 
 
-def fetch_slack_name(doc):
+def get_slack_name(doc):
     """
     :param doc:
     :return: The name of the person who made this slack event happen. AKA the sender of a message.
@@ -67,7 +67,7 @@ def fetch_slack_name(doc):
     return user["user"]["profile"]["real_name"]
 
 
-def fetch_slack_username(doc):
+def get_slack_username(doc):
     """
     :param doc:
     :return: The username of a slack sender.
@@ -79,7 +79,7 @@ def fetch_slack_username(doc):
     return user["user"]["name"]
 
 
-def fetch_slack_channel(doc):
+def get_slack_channel(doc):
     """
     :param doc: The slack event dictionary.
     :return: the channel of an event.
@@ -96,7 +96,7 @@ class SlackType(AbstractType):
         ("event_type", str): ["data", "event", "type"],
         ("slack_timestamp", int): ["data", "event_time"],
         ("team_id", str): ["data", "team_id"],
-        ("name", str, fetch_slack_name): [],
-        ("username", str, fetch_slack_username): [],
-        ("channel_name", str, fetch_slack_channel): []
+        ("name", str, get_slack_name): [],
+        ("username", str, get_slack_username): [],
+        ("channel_name", str, get_slack_channel): []
     }
