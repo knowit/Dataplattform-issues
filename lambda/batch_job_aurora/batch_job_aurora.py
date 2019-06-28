@@ -9,7 +9,7 @@ inserts that information into an aurora db.
 """
 
 # These types will be used if no other types are provided.
-DEFAULT_TYPES = ["GithubType", "EventRatingType"]
+DEFAULT_TYPES = ["GithubType", "EventRatingType", "SlackType"]
 DEFAULT_TIMESTAMP_FROM = 0
 DEFAULT_TIMESTAMP_TO = 2147483647
 

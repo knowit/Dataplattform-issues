@@ -28,6 +28,15 @@ class AbstractType:
             attr_name = attr[0]
             value = doc.copy()
             is_ok = True
+
+            if len(attr) >= 3:
+                # Then we have a special case and we need to run a different function in order
+                # to get the values.
+                func = attr[2]
+                value = func(doc)
+                output[attr_name] = value
+                continue
+
             for attr in attribute_path:
                 # If the attr is an int, it is actually an index. And therefore we need to
                 # make sure that our value list is long enough.
