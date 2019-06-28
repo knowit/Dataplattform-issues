@@ -1,10 +1,6 @@
 import slack_ingest
 
 
-def test_test():
-    assert True
-
-
 def test_missing_signature():
     event = {
         "body": "{}",
