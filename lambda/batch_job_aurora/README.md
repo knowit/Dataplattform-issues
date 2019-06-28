@@ -23,3 +23,4 @@ For å kjøre denne lambdaen så trenger du disse environment keysene:
 ```DATAPLATTFORM_AURORA_DB_NAME``` er navnet til Aurora db.  
 ```DATAPLATTFORM_AURORA_USER``` er brukernavnet til en user på Aurora db.  
 ```DATAPLATTFORM_AURORA_PASSWORD``` er passordet til Aurora db.  
+```DATAPLATTFORM_AURORA_SLACK_TOKEN``` er oAuth tokenet til Slack.  
