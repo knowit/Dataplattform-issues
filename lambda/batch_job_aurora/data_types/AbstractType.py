@@ -40,10 +40,10 @@ class AbstractType:
             for attr in attribute_path:
                 # If the attr is an int, it is actually an index. And therefore we need to
                 # make sure that our value list is long enough.
-                if type(attr) is int and attr <= (len(value) - 1):
+                if type(attr) is int and type(value) is list and attr <= (len(value) - 1):
                     value = value[attr]
                 # if not then we need to make sure that attr is a key in the dictionary value.
-                elif type(attr) is str and attr in value:
+                elif type(attr) is str and type(value) is dict and attr in value:
                     value = value[attr]
                 else:
                     is_ok = False
