@@ -57,9 +57,15 @@ def get_docs(table, data_type, timestamp_from, timestamp_to):
     lower_value = tr.get_range_timestamp_random(timestamp_from)[0]
     upper_value = tr.get_range_timestamp_random(timestamp_to)[1]
 
-    response = table.query(
-        KeyConditionExpression=Key('timestamp_random').between(lower_value, upper_value) & Key(
-            'type').eq(data_type),
-    )
+    key_expression = Key('type').eq(data_type) & Key('timestamp_random').between(lower_value,
+                                                                                 upper_value)
+
+    response = table.query(KeyConditionExpression=key_expression)
     items = response['Items']
+
+    while response.get('LastEvaluatedKey'):
+        response = table.query(KeyConditionExpression=key_expression,
+                               ExclusiveStartKey=response['LastEvaluatedKey'])
+        items.extend(response['Items'])
+
     return items
