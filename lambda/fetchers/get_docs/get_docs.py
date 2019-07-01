@@ -3,6 +3,7 @@ from boto3.dynamodb.conditions import Key
 import json
 import base64
 import timestamp_random as tr
+import uuid
 
 
 def handler(event, context):
@@ -24,9 +25,10 @@ def handler(event, context):
             pass
     docs = get_docs(table, data_type, timestamp_from, timestamp_to)
     docs = docs_to_json(docs)
+    url = upload_data_to_bucket(docs)
     return {
         'statusCode': 200,
-        'body': json.dumps(docs)
+        'body': json.dumps({"url": url})
     }
 
 
@@ -44,6 +46,34 @@ def docs_to_json(docs):
         else:
             doc["data"] = {}
     return docs
+
+
+def upload_data_to_bucket(data, bucket_name="dataplattform-get-docs-cache"):
+    """
+    Uploads the data and creates a presigned url that works for 5 minutes.
+    :param data: the data that should be uploaded. as a dictionary.
+    :param bucket_name: The name of the bucket.
+    :return: The presigned url that works for 5 minutes.
+    """
+
+    data_encoded = json.dumps(data).encode(encoding='UTF-8')
+    # Generate a random S3 key name
+    upload_key = uuid.uuid4().hex
+
+    s3_resource = boto3.resource("s3")
+    s3_resource.Bucket(bucket_name).put_object(Key=upload_key, Body=data_encoded)
+
+    s3_client = boto3.client('s3')
+    # Generate the presigned URL for put requests
+    presigned_url = s3_client.generate_presigned_url(
+        ClientMethod='get_object',
+        Params={
+            'Bucket': bucket_name,
+            'Key': upload_key
+        },
+        ExpiresIn=300
+    )
+    return presigned_url
 
 
 def get_docs(table, data_type, timestamp_from, timestamp_to):

@@ -122,7 +122,12 @@ def fetch_data_url(url):
     fetch_key = os.getenv("DATAPLATTFORM_AURORA_FETCH_KEY")
     req = urllib.request.Request(url, headers={"x-api-key": fetch_key})
     response = urllib.request.urlopen(req)
-    return json.loads(response.read().decode())
+    response_dict = json.loads(response.read().decode())
+    signed_url = response_dict["url"]
+
+    req2 = urllib.request.Request(signed_url)
+    response2 = urllib.request.urlopen(req2)
+    return json.loads(response2.read().decode())
 
 
 def format_url(base_url, type, timestamp_from, timestamp_to):
