@@ -92,6 +92,16 @@ def test_get_column_values():
 def test_get_slack_channel_cached():
     # Create a fake channel with a fake user dictionary.
     SlackType.slack_channel_id_to_channel_info["channel123"] = {
-        "channel": {"name": "Epic Channel name"}}
+        "channel": {"name": "Epic Channel name"},
+        "ok": True
+    }
     cached_channel = SlackType.get_slack_channel({"data": {"event": {"channel": "channel123"}}})
     assert cached_channel == "Epic Channel name"
+
+
+def test_deleted_channel():
+    SlackType.slack_channel_id_to_channel_info["channel123"] = {
+        "ok": False
+    }
+    cached_channel = SlackType.get_slack_channel({"data": {"event": {"channel": "channel123"}}})
+    assert cached_channel is None
