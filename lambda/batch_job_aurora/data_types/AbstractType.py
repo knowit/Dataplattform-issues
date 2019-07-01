@@ -18,6 +18,14 @@ class AbstractType:
         self.attributes_keep[("id", str)] = self.attributes_keep_default[("id", str)]
         self.attributes_keep[("timestamp", int)] = self.attributes_keep_default[("timestamp", int)]
 
+    def accept_data(self, doc):
+        """
+        :param doc: The doc that should be evaluated
+        :return: Returns true always here, override the function in the subclass if you only
+        want to filter out some records.
+        """
+        return True
+
     def get_column_values(self, doc):
         """
         :param doc: A raw document from get_docs API.
