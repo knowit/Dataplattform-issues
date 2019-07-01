@@ -233,3 +233,10 @@ class GithubType(AbstractType):
         ("open_issues_count", int): ["data", "repository", "open_issues_count"],
         ("ref", str): ["data", "ref"]
     }
+
+    def accept_data(self, doc):
+        """
+        :param doc: Which doc should be evaluated.
+        :return: Returns true on every event that is an actual commit.
+        """
+        return doc["data"] and "head_commit" in doc["data"] and doc["data"]["head_commit"]
