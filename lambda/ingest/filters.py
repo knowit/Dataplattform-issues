@@ -10,6 +10,10 @@ def filter_github(data):
 
 def filter_slack(data):
     data_dict = json.loads(data)
+    if "event" not in data_dict:
+        return None
+    if data_dict["event"].get("subtype") or data_dict["event"].get("files"):
+        return None
     if "text" in data_dict["event"]:
         del data_dict["event"]["text"]
     if "user" in data_dict["event"]:
