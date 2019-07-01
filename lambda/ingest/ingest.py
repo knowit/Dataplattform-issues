@@ -2,6 +2,7 @@ import boto3
 from datetime import datetime as dt
 import json
 import timestamp_random as tr
+import filters
 
 
 def handler(event, context):
@@ -18,6 +19,11 @@ def handler(event, context):
 
 
 def insert_doc(table, type, data=None, timestamp=None):
+    if type in filters.filter:
+        data = filters.filter[type](data)
+    if data is None:
+        return 0
+
     if timestamp is None:
         timestamp = int(dt.now().timestamp())
 
