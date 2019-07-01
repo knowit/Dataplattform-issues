@@ -2,6 +2,7 @@ import json
 import urllib.request
 import os
 import pymysql
+from datetime import datetime as dt
 
 """
 This lambda gets raw data from the get_docs API and extracts only the valueable information and 
@@ -10,8 +11,10 @@ inserts that information into an aurora db.
 
 # These types will be used if no other types are provided.
 DEFAULT_TYPES = ["GithubType", "EventRatingType", "SlackType"]
-DEFAULT_TIMESTAMP_FROM = 0
-DEFAULT_TIMESTAMP_TO = 2147483647
+
+# Assume running hourly by default. Request the last 1h10m of data.
+DEFAULT_TIMESTAMP_TO = timestamp = int(dt.now().timestamp())
+DEFAULT_TIMESTAMP_FROM = DEFAULT_TIMESTAMP_TO - 70 * 60
 
 
 def handler(event, context):
@@ -27,10 +30,10 @@ def handler(event, context):
     if "timestamp_to" in event:
         timestamp_to = event["timestamp_to"]
 
-    counter = main(types, timestamp_from, timestamp_to)
+    counter, n_dupes = main(types, timestamp_from, timestamp_to)
     return {
         'statusCode': 200,
-        'body': json.dumps(str(counter) + " records successfully inserted into Aurora.")
+        'body': f"{counter} records inserted into Aurora. {n_dupes} duplicates skipped."
     }
 
 
@@ -92,6 +95,7 @@ def insert_data_into_db(sql_connection, datas, type):
     """
     # Just a simple counter to see how many records
     counter = 0
+    duplicates = 0
     for data in datas:
         cursor = sql_connection.cursor()
 
@@ -107,11 +111,11 @@ def insert_data_into_db(sql_connection, datas, type):
             res = cursor.execute(sql, data)
             counter += res
         except pymysql.err.IntegrityError:
-            print("ID: " + data["id"] + " is a duplicate, skipping.")
+            duplicates += 1
 
     sql_connection.commit()
 
-    return counter
+    return counter, duplicates
 
 
 def fetch_data_url(url):
@@ -122,15 +126,20 @@ def fetch_data_url(url):
     fetch_key = os.getenv("DATAPLATTFORM_AURORA_FETCH_KEY")
     req = urllib.request.Request(url, headers={"x-api-key": fetch_key})
     response = urllib.request.urlopen(req)
-    return json.loads(response.read().decode())
+    response_dict = json.loads(response.read().decode())
+    signed_url = response_dict["url"]
+
+    req2 = urllib.request.Request(signed_url)
+    response2 = urllib.request.urlopen(req2)
+    return json.loads(response2.read().decode())
 
 
 def format_url(base_url, type, timestamp_from, timestamp_to):
     """
     :return: A formatted url.
     """
-    return base_url + type + "?timestamp_from=" + str(timestamp_from) \
-           + "&timestamp_to=" + str(timestamp_to)
+    return base_url + type + "?timestamp_from=" + str(timestamp_from) + "&timestamp_to=" + str(
+        timestamp_to)
 
 
 def main(types, timestamp_from, timestamp_to):
@@ -145,17 +154,20 @@ def main(types, timestamp_from, timestamp_to):
         charset='utf8mb4',
         cursorclass=pymysql.cursors.DictCursor)
     counter = 0
+    duplicates = 0
 
     for type in types:
         url = format_url(base_url, type, timestamp_from, timestamp_to)
         docs = fetch_data_url(url)
         sql_format = get_relevant_attrs(docs, type, connection)
-        n_records = insert_data_into_db(connection, sql_format, type)
+        n_records, n_duplicates = insert_data_into_db(connection, sql_format, type)
         counter += n_records
+        duplicates += n_duplicates
     connection.close()
-    return counter
+    return counter, duplicates
 
 
 if __name__ == '__main__':
-    number_of_recs_inserted = main(DEFAULT_TYPES, DEFAULT_TIMESTAMP_FROM, DEFAULT_TIMESTAMP_TO)
-    print("Number of records inserted", number_of_recs_inserted)
+    number_of_recs_inserted, n_dupes = main(DEFAULT_TYPES, DEFAULT_TIMESTAMP_FROM,
+                                            DEFAULT_TIMESTAMP_TO)
+    print(f"Inserted {number_of_recs_inserted} records and skipped {n_dupes} duplicates.")
