@@ -49,6 +49,8 @@ def get_slack_channel(doc):
     if channel_id not in slack_channel_id_to_channel_info:
         fetch_slack_channel_info(channel_id)
     channel = slack_channel_id_to_channel_info[channel_id]
+    if not channel["ok"]:
+        return None
     return channel["channel"]["name"]
 
 
