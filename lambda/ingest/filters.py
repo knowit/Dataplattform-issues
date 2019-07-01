@@ -12,6 +12,9 @@ def filter_slack(data):
     data_dict = json.loads(data)
     if "text" in data_dict["event"]:
         del data_dict["event"]["text"]
+    if "user" in data_dict["event"]:
+        del data_dict["event"]["user"]
+
     return json.dumps(data_dict)
 
 
