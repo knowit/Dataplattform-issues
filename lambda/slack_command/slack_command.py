@@ -11,7 +11,7 @@ def lambda_handler(event, context):
     # dictionary.
     slack_params = urllib.parse.parse_qs(body)
 
-    if "/event-button" in slack_params.get("command", []):
+    if "/arrangement" in slack_params.get("command", []):
         data = {
             "response_url": slack_params["response_url"][0],
             "event_type": "/event_button"
