@@ -31,6 +31,12 @@ def lambda_handler(event, context):
 
 
 def invoke_and_return(data):
+    """
+    :param data: The data that should be sent to the invoked lambda.
+    :return: Returns a status code 200 if everything is fine. And also 200 but a different text
+    if the lambda was not invoked. This is because the text shows up in slack if the statuscode
+    is 200.
+    """
     client = boto3.client('lambda')
     response = client.invoke(
         FunctionName='dataplattform_slack_response',
@@ -40,6 +46,7 @@ def invoke_and_return(data):
         Payload=json.dumps(data).encode()
     )
 
+    # Invoked correctly if statuscode is 202.
     if response["StatusCode"] == 202:
         return {
             'statusCode': 200,
