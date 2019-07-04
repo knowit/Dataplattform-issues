@@ -5,6 +5,12 @@ import googleapiclient.discovery
 import logging
 import json
 import urllib.request
+import random
+import boto3
+from boto3.dynamodb.conditions import Key, Attr
+
+client = boto3.resource("dynamodb")
+table = client.Table("dataplattform_event_codes")
 
 
 def handler(event, context):
@@ -21,8 +27,6 @@ def handler(event, context):
     calendar_id = os.getenv("DATAPLATTFORM_FAGKALENDER_ID")
     calendar_events = get_events(creds, calendar_id)
 
-    # Fix slack response.
-
     response_url = event["response_url"]
     event_type = event["event_type"]
 
@@ -31,7 +35,10 @@ def handler(event, context):
         send_response(blocks, response_url)
     elif event_type == "click_action":
         event_id_clicked = event["event_id_clicked"]
-        code = create_code(event_id_clicked)
+        now = int(datetime.datetime.now().timestamp())
+        to = now + 24 * 60 * 60  # TODO
+        event_name = calendar_events[event_id_clicked]["summary"]
+        code = create_code(event_id_clicked, event_name, now, to)
         blocks = create_blocks(calendar_events, {event_id_clicked: code})
 
         send_response(blocks, response_url)
@@ -48,19 +55,45 @@ def get_code(event_id):
     :return: Returns an existing code for a specific event. Or None if it doesn't exist.
     """
 
-    # TODO lookup from db.
+    response = table.query(KeyConditionExpression=Key('event_id').eq(event_id))
+    items = response["Items"]
+    if items:
+        return items[0]["event_code"]
     return None
 
 
-def create_code(event_id):
+def collision(code, timestamp_from, timestamp_to):
+    filter_expr = Attr('event_code').eq(code) & (
+            Attr('timestamp_from').lt(timestamp_to) | Attr('timestamp_to').gt(timestamp_from))
+    response = table.scan(FilterExpression=filter_expr, ConsistentRead=True)
+    items = response['Items']
+    return len(items) > 0
+
+
+def create_code(event_id, event_name, timestamp_from, timestamp_to):
     """
     :param event_id:
     :return: Returns either a new id for the calendar/ event ID or an existing one.
     """
+    existing_code = get_code(event_id)
+    if existing_code:
+        return existing_code
 
-    # TODO: lookup from db.
-    # if not exists already.. random
-    return "00010111"
+    digits = 6
+    event_code = random.randint(0, (2 ** digits) - 1)
+    code = format(event_code, '0' + str(digits) + 'b')
+
+    if collision(code, timestamp_from, timestamp_to):
+        return create_code(event_id, event_name, timestamp_from, timestamp_to)
+
+    table.put_item(Item={
+        'event_id': event_id,
+        'event_code': code,
+        'event_name': event_name,
+        'timestamp_from': timestamp_from,
+        'timestamp_to': timestamp_to,
+    })
+    return code
 
 
 def send_response(blocks, response_url):
@@ -72,15 +105,14 @@ def send_response(blocks, response_url):
         ]
 
     }
-    req = urllib.request.Request(response_url, data=json.dumps(data).encode("ascii"))
+    req = urllib.request.Request(response_url, data=json.dumps(data).encode())
     response = urllib.request.urlopen(req)
     return response
 
 
 def create_event_section(title, date, id):
     event_code = get_code(id)
-
-    return [
+    section = [
         {
             "type": "section",
             "text": {
@@ -96,13 +128,16 @@ def create_event_section(title, date, id):
                 },
                 "value": id,
                 "action_id": "button",
-                "style": "primary" if event_code is None else "default"
+
             }
         },
         {
             "type": "divider"
         },
     ]
+    if event_code:
+        section[0]["accessory"]["style"] = "primary"
+    return section
 
 
 def create_blocks(events, data=None):
@@ -117,7 +152,7 @@ def create_blocks(events, data=None):
                 "type": "mrkdwn",
                 "text": "Velg arrangementet du vil bruke knappen på."
                         "\n (Listen er hentet fra google calender, lag event der først om du ikke "
-                        "ser den på listen her.) (link til wiki-side på hvordan)" + extra
+                        "ser den på listen her.) (link til wiki-side på hvordan)"
             }
         },
         {
@@ -125,10 +160,10 @@ def create_blocks(events, data=None):
         }
     ]
 
-    for event in events:
-        title = event["summary"]
-        date = event["start"]
-        id = event["id"]
+    for event_id, event_info in events.items():
+        title = event_info["summary"]
+        date = event_info["start"]
+        id = event_id
         block = create_event_section(title, date, id)
         blocks.extend(block)
     return blocks
@@ -146,12 +181,10 @@ def get_events(creds, calendar_id):
         .execute()
     events = events_result.get('items', [])
 
-    info = []
+    info = {}
     for event in events:
-        i = {
+        info[event['id']] = {
             'start': event['start'].get('dateTime', event['start'].get('date')),
             'summary': event['summary'],
-            'id': event['id']
         }
-        info.append(i)
     return info
