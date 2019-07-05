@@ -1,36 +1,36 @@
 import datetime
 import os
-import pickle
 import googleapiclient.discovery
 import logging
 import json
 import urllib.request
 import random
 import boto3
+import httplib2
 from boto3.dynamodb.conditions import Key, Attr
+from oauth2client.service_account import ServiceAccountCredentials
 
 client = None
 table = None
 
 
 def handler(event, context):
+    creds_file = 'creds.json'
+    if not os.path.exists(creds_file):
+        return {
+            'statusCode': 500,
+            'body': 'oof'
+        }
     global client
     global table
     client = boto3.resource("dynamodb")
     table = client.Table("dataplattform_event_codes")
 
-    if not os.path.exists('token.pickle'):
-        return {
-            'statusCode': 500,
-            'body': 'oof'
-        }
     # Silence warning from google libraries
     logging.getLogger('googleapiclient.discovery_cache').setLevel(logging.ERROR)
 
-    with open('token.pickle', 'rb') as token:
-        creds = pickle.load(token)
     calendar_id = os.getenv("DATAPLATTFORM_FAGKALENDER_ID")
-    calendar_events = get_events(creds, calendar_id)
+    calendar_events = get_events(creds_file, calendar_id)
 
     response_url = event["response_url"]
     event_type = event["event_type"]
@@ -198,14 +198,21 @@ def create_blocks(events):
     return blocks
 
 
-def get_events(creds, calendar_id):
+def get_events(credsfile, calendar_id):
     """
     :param creds: credentials
     :param calendar_id:
     :return: A dictionary containing (max 10) of the events in the nearest future from this
     specific calendar_id.
     """
-    service = googleapiclient.discovery.build('calendar', 'v3', credentials=creds)
+    credentials = ServiceAccountCredentials.from_json_keyfile_name(credsfile, [
+        'https://www.googleapis.com/auth/calendar.readonly'])
+
+    http = httplib2.Http()
+    http = credentials.authorize(http)
+
+    service = googleapiclient.discovery.build(serviceName='calendar', version='v3', http=http)
+
     now = datetime.datetime.utcnow().isoformat() + 'Z'
     events_result = service.events().list(
         calendarId=calendar_id,

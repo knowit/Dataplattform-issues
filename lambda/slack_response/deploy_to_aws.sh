@@ -12,6 +12,6 @@ cd venv/lib/python3.6/site-packages
 zip -r9 ${OLDPWD}/slack_response.zip .
 cd $OLDPWD
 zip -g slack_response.zip slack_response.py
-zip -g slack_response.zip token.pickle
+zip -g slack_response.zip creds.json
 echo "Uploading"
 aws lambda update-function-code --function-name dataplattform_slack_response --zip-file fileb://slack_response.zip
