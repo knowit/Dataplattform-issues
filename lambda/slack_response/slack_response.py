@@ -7,6 +7,7 @@ import urllib.request
 import random
 import boto3
 import httplib2
+import dateutil
 from boto3.dynamodb.conditions import Key, Attr
 from oauth2client.service_account import ServiceAccountCredentials
 
@@ -42,11 +43,16 @@ def handler(event, context):
     # This event is when someone clicked on `få kode` on some event.
     elif event_type == "click_action":
         event_id_clicked = event["event_id_clicked"]
-        now = int(datetime.datetime.now().timestamp())
-        to = now + 24 * 60 * 60  # TODO
-        event_name = calendar_events[event_id_clicked]["summary"]
+        calendar_event = calendar_events[event_id_clicked]
+
+        timestamp_now = int(datetime.datetime.now().timestamp())
+        end = calendar_event['end']
+        timestamp_end = int(dateutil.parser.parse(end).timestamp())
+        timestamp_to = timestamp_end + 24 * 60 * 60
+        event_name = calendar_event["summary"]
+
         # Try to create a new code for the event just clicked.
-        create_code(event_id_clicked, event_name, now, to)
+        create_code(event_id_clicked, event_name, timestamp_now, timestamp_to)
         blocks = create_blocks(calendar_events)
         send_response(blocks, response_url)
     return {
@@ -227,6 +233,7 @@ def get_events(credsfile, calendar_id):
     for event in events:
         info[event['id']] = {
             'start': event['start'].get('dateTime', event['start'].get('date')),
+            'end': event['end'].get('dateTime', event['end'].get('date')),
             'summary': event['summary'],
         }
     return info

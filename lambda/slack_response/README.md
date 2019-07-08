@@ -3,8 +3,8 @@ Denne lambdaen skal ta imot en request fra ```slack_command```-lambdaen og lage 
 den til slack sin response_url.
 
 ## Virkemåte
-Denne funker ved at den først henter ut de 10 nærmeste fageventene til knowit på knowit sin
-kalender, deretter så ser den på requesten som kom inn for å finne ut hva slags event som gjorde at
+Denne funker ved at den først henter ut de 10 neste fagarrangementene til knowit fra knowit sin
+kalender, deretter ser den på requesten som kom inn for å finne ut hva slags event som gjorde at
 lambdaen ble kjørt, er det noen som skal ha en ny kode til et arrangement eller skal man bare vise
 alle uten å lage nye koder? Om noen trykket på ```Få kode```-knappen så må man generere en 
 tilfeldig kode og så sjekke om den blir alt brukt eller ikke. Og så er det bare å bygge
@@ -13,10 +13,11 @@ til ```response_url```-en.
 
 ## Setup
 
-For å sette opp denne lambdaen må du først hente en ```credentials.json``` fil på 
-https://developers.google.com/calendar/quickstart/python, vi har laget en egen google-konto til 
-å gjøre dette. Deretter så kan du gjøre ```get_token.py``` filen for å lage en token i en 
-```token.pickle``` fil. Da kan du kjøre ```deploy_to_aws.sh``` for å deploye lambdaen.
+For å sette opp denne lambdaen må du først lage en ```creds.json```.
+Vi har et eget ```Dataplattform```-prosjekt i Google API console.
+Lag en service account på prosjektet og velg json når du lagrer credentialsene.
+Lagre som ```creds.json``` i denne mappen før du kjører ```deploy_to_aws.sh``` for å deploye
+lambdaen.
 
-PS: ```slack_response``` trenger tilgang til en ny tabell i DynamoDB 
+HUSK: ```slack_response``` trenger tilgang til en ny tabell i DynamoDB
 ```dataplattform_event_codes```.
