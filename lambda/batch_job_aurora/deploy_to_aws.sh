@@ -1,10 +1,12 @@
-# Small script that installs virtual environment if you don't have one already and installs all the dependecies needed and creates a zip of everything that lambda needs.
+#!/bin/sh
+# Small script that installs virtual environment if you don't have one already and installs all the
+# dependecies needed and creates a zip of everything that lambda needs.
 
 if ! [ -d "venv" ]; then 
     virtualenv -p python3 venv
 fi
 rm batch_job_aurora.zip
-source venv/bin/activate
+. venv/bin/activate
 pip install -r requirements.txt
 
 cd venv/lib/python3.6/site-packages
