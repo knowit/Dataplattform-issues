@@ -1,60 +1,60 @@
 service: dataplattform-dynamodb
 
 custom:
-    stage: ${opt:stage, self:provider.stage}
-    rawTable: ${self:custom.stage}-dataplattform
-    eventTable: ${self:custom.stage}-dataplattform_event_codes
+  stage: ${opt:stage, self:provider.stage}
+  rawTable: ${self:custom.stage}-dataplattform
+  eventTable: ${self:custom.stage}-dataplattform_event_codes
 
 provider:
-    name: aws
-    stage: dev
-    region: eu-central-1
+  name: aws
+  stage: dev
+  region: eu-central-1
 
 resources:
-    Resources:
-        RawTable:
-            Type: AWS::DynamoDB::Table
-            Properties:
-                TableName: ${self:custom.rawTable}
-                AttributeDefinitions:
-                    - AttributeName: type
-                      AttributeType: S
-                    - AttributeName: timestamp_random
-                      AttributeType: B
-                KeySchema:
-                    - AttributeName: type
-                      KeyType: HASH
-                    - AttributeName: timestamp_random
-                      KeyType: RANGE
-                ProvisionedThroughput:
-                    ReadCapacityUnits: 10
-                    WriteCapacityUnits: 5
-        EventTable:
-            Type: AWS::DynamoDB::Table
-            Properties:
-                TableName: ${self:custom.eventTable}
-                AttributeDefinitions:
-                    - AttributeName: event_id
-                      AttributeType: S
-                KeySchema:
-                    - AttributeName: event_id
-                      KeyType: HASH
-                ProvisionedThroughput:
-                    ReadCapacityUnits: 5
-                    WriteCapacityUnits: 5
-    Outputs:
-        RawTableArn:
-            Value:
-                Fn::GetAtt:
-                    - RawTable
-                    - Arn
-            Export:
-                Name: ${self:custom.stage}-dynamodb-rawtable-arn
-        EventTableArn:
-            Value:
-                Fn::GetAtt:
-                    - EventTable
-                    - Arn
-            Export:
-                Name: ${self:custom.stage}-dynamodb-eventtable-arn
+  Resources:
+    RawTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:custom.rawTable}
+        AttributeDefinitions:
+          - AttributeName: type
+            AttributeType: S
+          - AttributeName: timestamp_random
+            AttributeType: B
+        KeySchema:
+          - AttributeName: type
+            KeyType: HASH
+          - AttributeName: timestamp_random
+            KeyType: RANGE
+        ProvisionedThroughput:
+          ReadCapacityUnits: 10
+          WriteCapacityUnits: 5
+    EventTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:custom.eventTable}
+        AttributeDefinitions:
+          - AttributeName: event_id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: event_id
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 5
+          WriteCapacityUnits: 5
+  Outputs:
+    RawTableArn:
+      Value:
+        Fn::GetAtt:
+          - RawTable
+          - Arn
+      Export:
+        Name: ${self:custom.stage}-dynamodb-rawtable-arn
+    EventTableArn:
+      Value:
+        Fn::GetAtt:
+          - EventTable
+          - Arn
+      Export:
+        Name: ${self:custom.stage}-dynamodb-eventtable-arn
 
