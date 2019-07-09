@@ -83,7 +83,7 @@ def handler(event, context):
     # This is when someone submits the dialog.
     elif event_type == "dialog_submission":
         submission = event["submission"]
-        number_of_people_attended = submission["number_of_people"]
+        number_of_people_attended = int(submission["number_of_people"])
         guild = submission["guild"]
         event_id = event["event_id"]
 
@@ -298,10 +298,7 @@ def send_scheduled_im(event_name, user_id, event_id, timestamp):
         "attachments": json.dumps(attachments)
     }
     base_url = "https://slack.com/api/chat.scheduleMessage"
-    query = urllib.parse.urlencode(params)
-    url = base_url + "?" + query
-    req = urllib.request.Request(url)
-    return urllib.request.urlopen(req)
+    return send_response(base_url, params=params)
 
 
 def send_response_blocks(blocks, response_url):

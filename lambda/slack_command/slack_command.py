@@ -25,15 +25,6 @@ def lambda_handler(event, context):
 
         return invoke_and_return(data)
 
-    if "/registrer-arrangement" in command:
-        data = {
-            "event_type": "/register",
-            "response_url": slack_params["response_url"][0],
-            "user_id": slack_params["user_id"][0]
-        }
-
-        return invoke_and_return(data)
-
     elif "payload" in slack_params:
         payload = json.loads(slack_params["payload"][0])
         payload_type = payload["type"]

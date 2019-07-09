@@ -11,10 +11,10 @@ tilfeldig kode og så sjekke om den blir alt brukt eller ikke. Og så er det bar
 json-objektet som skal returnes og vises fram som en Slack interactive block app og sende den 
 til ```response_url```-en. 
 
-Når koden blir gitt ut blir det også schedulet en melding fra slack som sier at du må Registrere
+Når koden blir gitt ut blir det også schedulet en melding fra slack som sier at du må registrere
  arrangementet. Så når arrangementet er ferdig så får du en melding fra slack-botten og du kan 
- da trykke på Registrer arrangement knappen og fylle inn hvor mange som kom der og hvilken 
- faggruppe som sto for dette arrangementet.
+ da trykke på ```Registrer arrangement``` knappen og fylle inn hvor mange som kom der og hvilken 
+ faggruppe som stod for dette arrangementet.
 
 ## Setup
 
