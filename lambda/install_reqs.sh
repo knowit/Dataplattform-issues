@@ -1,5 +1,6 @@
 pip install -r requirements.txt
-pip install layers/python/
+pip install layers/timestamp_random/python/
+pip install layers/slack_signature_validator/python/
 pip install batch_job_aurora/
 pip install ingest/
 pip install fetchers/get_docs/
