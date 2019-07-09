@@ -2,9 +2,14 @@ import json
 import urllib.parse
 import urllib.request
 import boto3
+import slack_signature_validator
 
 
 def lambda_handler(event, context):
+    slack_validator = slack_signature_validator.check_slack_event_legit(event)
+    if not slack_validator["statusCode"] == 200:
+        return slack_validator
+
     body = event["body"]
 
     # parse_qs converts a http parameter list like this: token=123&param2=12 into a nice
@@ -30,15 +35,6 @@ def lambda_handler(event, context):
         return invoke_and_return(data)
 
     elif "payload" in slack_params:
-        import logging
-        root = logging.getLogger()
-        if root.handlers:
-            for handler in root.handlers:
-                root.removeHandler(handler)
-        logging.basicConfig(format='%(asctime)s %(message)s', level=logging.DEBUG)
-        root.log(123, "OMG VI ER HER:")
-        root.log(123, slack_params)
-
         payload = json.loads(slack_params["payload"][0])
         payload_type = payload["type"]
 
