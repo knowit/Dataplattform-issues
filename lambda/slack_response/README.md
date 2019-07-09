@@ -11,6 +11,11 @@ tilfeldig kode og så sjekke om den blir alt brukt eller ikke. Og så er det bar
 json-objektet som skal returnes og vises fram som en Slack interactive block app og sende den 
 til ```response_url```-en. 
 
+Når koden blir gitt ut blir det også schedulet en melding fra slack som sier at du må Registrere
+ arrangementet. Så når arrangementet er ferdig så får du en melding fra slack-botten og du kan 
+ da trykke på Registrer arrangement knappen og fylle inn hvor mange som kom der og hvilken 
+ faggruppe som sto for dette arrangementet.
+
 ## Setup
 
 For å sette opp denne lambdaen må du først lage en ```creds.json```.
@@ -21,3 +26,9 @@ lambdaen.
 
 HUSK: ```slack_response``` trenger tilgang til en ny tabell i DynamoDB
 ```dataplattform_event_codes```.
+
+Environment variabler du trenger for denne lambdaen er:
+* SLACK_BOT_TOKEN
+* DATAPLATTFORM_FAGKALENDER_ID
+* DATAPLATTFORM_INGEST_APIKEY
+* DATAPLATTFORM_INGEST_URL
