@@ -108,3 +108,5 @@ venv.bak/
 
 # Compiled zip modules.
 **.zip
+**/.serverless/
+
