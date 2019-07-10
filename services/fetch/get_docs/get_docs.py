@@ -1,3 +1,5 @@
+import os
+
 import boto3
 from boto3.dynamodb.conditions import Key
 import json
@@ -8,7 +10,8 @@ import uuid
 
 def handler(event, context):
     client = boto3.resource("dynamodb")
-    table = client.Table("dataplattform")
+    table_name = os.getenv("DATAPLATTFORM_RAW_TABLENAME")
+    table = client.Table(table_name)
 
     data_type = event["pathParameters"]["type"]
     params = event["queryStringParameters"]
@@ -37,15 +40,22 @@ def docs_to_json(docs):
     :param docs: raw docs from DynamoDB
     :return: Convert boto types to regular ints and strings and then parse every doc to json.
     """
+    json_docs = []
     for doc in docs:
-        doc["id"] = base64.b64encode(doc["timestamp_random"].value).decode("utf-8")
-        del doc["timestamp_random"]
-        doc["timestamp"] = int(doc["timestamp"])
+        json_doc = {
+            "id": base64.b64encode(doc["timestamp_random"].value).decode("utf-8"),
+            "timestamp": int(doc["timestamp"]),
+            "type": doc["type"]
+        }
         if "data" in doc:
-            doc["data"] = json.loads(doc["data"])
+            try:
+                json_doc["data"] = json.loads(doc["data"])
+            except json.JSONDecodeError:
+                continue
         else:
-            doc["data"] = {}
-    return docs
+            json_doc["data"] = {}
+        json_docs.append(json_doc)
+    return json_docs
 
 
 def upload_data_to_bucket(data, bucket_name="dataplattform-get-docs-cache"):

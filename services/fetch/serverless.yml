@@ -1,9 +1,9 @@
-service: dataplattform-ingest
+service: dataplattform-fetch
 
 custom:
   stage: ${opt:stage, self:provider.stage}
   project: Dataplattform-${self:custom.stage}
-  ingest_lambda: ${self:custom.project}-ingest
+  get_docs_lambda: ${self:custom.project}-get_docs
 
 provider:
   name: aws
@@ -12,9 +12,8 @@ provider:
   runtime: python3.7
   memorySize: 1024
   timeout: 5
-  role: arn:aws:iam::275823250475:role/dataplattform_basic_lambda #TODO set up roles using serverless
   apiKeys:
-    - ${self:custom.project}-ingest-key
+    - ${self:custom.project}-fetch-key
   usagePlan:
     throttle: #TODO decide on some values
       burstLimit: 200
@@ -29,31 +28,30 @@ package:
     - "./**"
 
 functions:
-  ingest:
-    handler: ingest/ingest.handler
-    name: ${self:custom.ingest_lambda}
-    description: Main ingest lambda
-    role: ingestRole
+  get_docs:
+    handler: get_docs/get_docs.handler
+    name: ${self:custom.get_docs_lambda}
+    description: get_docs Lambda
+    role: getDocsRole
     layers:
       - 'Fn::ImportValue': ${self:custom.project}-layer-timestamprandom-arn
     package:
       include:
-        - 'ingest/*.py'
+        - 'get_docs/*.py'
     environment:
       DATAPLATTFORM_RAW_TABLENAME: dataplattform-${self:custom.stage}
     events:
       - http:
-          path: dataplattform_ingest/{type}
-          method: post
+          path: get_docs/{type}
+          method: get
           private: true
-
 
 resources:
   Resources:
-    ingestRole:
+    getDocsRole:
       Type: AWS::IAM::Role
       Properties:
-        RoleName: sls_Dataplattform_IngestRole
+        RoleName: ${self:custom.project}-GetDocsRole
         AssumeRolePolicyDocument:
           Version: '2012-10-17'
           Statement:
@@ -63,12 +61,26 @@ resources:
                   - lambda.amazonaws.com
               Action: sts:AssumeRole
         Policies:
-          - PolicyName: sls_Dataplattform_dynamodbPutItemPolicy
+          - PolicyName: ${self:custom.project}-dynamodbReadOnlyPolicy
             PolicyDocument:
               Version: '2012-10-17'
               Statement:
                 - Effect: Allow
                   Action:
-                    - dynamodb:PutItem
+                    - dynamodb:BatchGetItem
+                    - dynamodb:DescribeTable
+                    - dynamodb:GetItem
+                    - dynamodb:Scan
+                    - dynamodb:Query
                   Resource:
                     - 'Fn::ImportValue': ${self:custom.project}-dynamodb-rawtable-arn
+                - Effect: Allow
+                  Action:
+                    - logs:CreateLogGroup
+                    - logs:CreateLogStream
+                    - logs:PutLogEvents
+                  Resource: "*"
+                - Effect: Allow
+                  Action:
+                    - "s3:*" #TODO find out which ones we actually need
+                  Resource: "*"
