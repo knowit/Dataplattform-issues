@@ -1,13 +1,16 @@
+import os
+
 import boto3
 from datetime import datetime as dt
 import json
 import timestamp_random as tr
-import filters
+import ingest.filters as filters
 
 
 def handler(event, context):
     client = boto3.resource("dynamodb")
-    table = client.Table("dataplattform")
+    table_name = os.getenv("DATAPLATTFORM_RAW_TABLENAME")
+    table = client.Table(table_name)
 
     data_type = event["pathParameters"]["type"]
     data = (event["body"])

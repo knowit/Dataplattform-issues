@@ -2,13 +2,15 @@ service: dataplattform-dynamodb
 
 custom:
   stage: ${opt:stage, self:provider.stage}
-  rawTable: ${self:custom.stage}-dataplattform
-  eventTable: ${self:custom.stage}-dataplattform_event_codes
+  rawTable: dataplattform-${self:custom.stage}
+  eventTable: dataplattform_event_codes-${self:custom.stage}
 
 provider:
   name: aws
   stage: dev
   region: eu-central-1
+  tags:
+    Project: Dataplattform-${self:custom.stage}
 
 resources:
   Resources:
@@ -42,7 +44,7 @@ resources:
         ProvisionedThroughput:
           ReadCapacityUnits: 5
           WriteCapacityUnits: 5
-  Outputs:
+  Outputs: #TODO export actual table names as well?
     RawTableArn:
       Value:
         Fn::GetAtt:

@@ -12,6 +12,15 @@ provider:
   memorySize: 1024
   timeout: 5
   role: arn:aws:iam::275823250475:role/dataplattform_basic_lambda #TODO set up roles using serverless
+  apiKeys:
+    - dataplattform-${self:custom.stage}-ingest-key
+  usagePlan:
+    throttle: #TODO decide on some values
+      burstLimit: 200
+      rateLimit: 50
+  tags:
+    Project: Dataplattform-${self:custom.stage}
+
 
 package:
   individually: true
@@ -29,6 +38,13 @@ functions:
     package:
       include:
         - 'ingest/*.py'
+    environment:
+      DATAPLATTFORM_RAW_TABLENAME: dataplattform-${self:custom.stage}
+    events:
+      - http:
+          path: dataplattform_ingest/{type}
+          method: post
+          private: true
 
 
 resources:
@@ -46,7 +62,7 @@ resources:
                   - lambda.amazonaws.com
               Action: sts:AssumeRole
         Policies:
-          - PolicyName: myPolicyName
+          - PolicyName: sls_Dataplattform_dynamodbPutItemPolicy
             PolicyDocument:
               Version: '2012-10-17'
               Statement:
