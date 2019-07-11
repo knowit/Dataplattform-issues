@@ -384,7 +384,8 @@ def create_blocks(events):
                 "type": "mrkdwn",
                 "text": "Velg arrangementet du vil bruke knappen på."
                         "\n (Listen er hentet fra google calender, lag event der først om du ikke "
-                        "ser den på listen her.) (link til wiki-side på hvordan)"
+                        "ser den på listen her.)\n Les hvordan du kobler opp her: \n "
+                        "https://github.com/knowit/Dataplattform/wiki/Lage-et-arrangement-koblet-opp-mot-vurderingssystemet"
             }
         },
         {
