@@ -65,7 +65,6 @@ def upload_data_to_bucket(data, bucket_name="dataplattform-get-docs-cache"):
     :param bucket_name: The name of the bucket.
     :return: The presigned url that works for 5 minutes.
     """
-
     data_encoded = json.dumps(data).encode(encoding='UTF-8')
     # Generate a random S3 key name
     upload_key = uuid.uuid4().hex

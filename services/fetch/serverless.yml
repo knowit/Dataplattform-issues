@@ -34,7 +34,8 @@ functions:
     description: get_docs Lambda
     role: getDocsRole
     layers:
-      - 'Fn::ImportValue': ${self:custom.project}-layer-timestamprandom-arn
+      - arn:aws:lambda:eu-central-1:275823250475:layer:dev-timestamp_random:24 #TODO
+      #- 'Fn::ImportValue': ${self:custom.project}-layer-timestamprandom-arn
     package:
       include:
         - 'get_docs/*.py'

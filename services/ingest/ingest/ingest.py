@@ -26,7 +26,6 @@ def insert_doc(table, type, data=None, timestamp=None):
         data = filters.filter[type](data)
     if data is None:
         return 0
-
     if timestamp is None:
         timestamp = int(dt.now().timestamp())
 

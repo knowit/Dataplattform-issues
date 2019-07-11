@@ -12,10 +12,18 @@ provider:
     Project: ${self:custom.project}
 
 layers:
+  # TODO set layers to retain: true and avoid hardcoding them in ingest and fetch
   TimestampRandom:
     path: timestamp_random
-    name: ${self:custom.stage}-timestamp_random
+    name: ${self:custom.project}-timestamp_random
     description: Generate unique ids
+    compatibleRuntimes:
+      - python3.7
+
+  SlackSignatureValidator:
+    path: slack_signature_validator
+    name: ${self:custom.project}-slack_signature_validator
+    description: Validate that requests are made from Slack
     compatibleRuntimes:
       - python3.7
 
@@ -26,3 +34,8 @@ resources:
         Ref: TimestampRandomLambdaLayer
       Export:
         Name: ${self:custom.project}-layer-timestamprandom-arn
+    SlackSignatureValidatorArn:
+      Value:
+        Ref: SlackSignatureValidatorLambdaLayer
+      Export:
+        Name: ${self:custom.project}-layer-slacksignaturevalidator-arn

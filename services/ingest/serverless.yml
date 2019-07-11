@@ -35,7 +35,8 @@ functions:
     description: Main ingest lambda
     role: ingestRole
     layers:
-      - 'Fn::ImportValue': ${self:custom.project}-layer-timestamprandom-arn
+      - arn:aws:lambda:eu-central-1:275823250475:layer:dev-timestamp_random:24 #TODO
+      #- 'Fn::ImportValue': ${self:custom.project}-layer-timestamprandom-arn
     package:
       include:
         - 'ingest/*.py'
