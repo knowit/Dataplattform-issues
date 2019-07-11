@@ -4,6 +4,7 @@ custom:
   stage: ${opt:stage, self:provider.stage}
   project: Dataplattform-${self:custom.stage}
   ingest_lambda: ${self:custom.project}-ingest
+  slack_ingest_lambda: ${self:custom.project}-slack_ingest
 
 provider:
   name: aws
@@ -15,6 +16,8 @@ provider:
   role: arn:aws:iam::275823250475:role/dataplattform_basic_lambda #TODO set up roles using serverless
   apiKeys:
     - ${self:custom.project}-ingest-key
+    - name: ${self:custom.project}-slack_ingest-apikey
+      value: ${ssm:dataplattform_slack_ingest_apikey}
   usagePlan:
     throttle: #TODO decide on some values
       burstLimit: 200
@@ -47,6 +50,33 @@ functions:
           path: dataplattform_ingest/{type}
           method: post
           private: true
+  slack_ingest:
+    handler: slack_ingest/slack_ingest.handler
+    name: ${self:custom.slack_ingest_lambda}
+    description: Slack webhook endpoint
+    layers:
+      - arn:aws:lambda:eu-central-1:275823250475:layer:slack_signature_validator:1 #TODO
+    package:
+      include:
+        - 'slack_ingest/*.py'
+    environment:
+      DATAPLATTFORM_SLACK_SECRET: ${ssm:dataplattform_slack_shared_secret}
+      DATAPLATTFORM_INGEST_APIKEY: ${ssm:dataplattform_slack_ingest_apikey}
+      DATAPLATTFORM_INGEST_URL:
+        !Join
+        - ''
+        - - 'https://'
+          - !Ref ApiGatewayRestApi
+          - '.execute-api.'
+          - ${self:provider.region}
+          - '.amazonaws.com/'
+          - ${self:custom.stage}
+          - '/dataplattform_ingest/SlackType'
+    events:
+      - http:
+          path: slack_ingest
+          method: post
+          private: false
 
 
 resources:
