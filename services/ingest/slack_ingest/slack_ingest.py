@@ -1,32 +1,20 @@
-import json
 import os
-import hashlib
-import hmac
 import urllib.request
 import urllib.parse
+import slack_signature_validator
 
 
 def handler(event, context):
+    slack_validator = slack_signature_validator.check_slack_event_legit(event)
+    if not slack_validator["statusCode"] == 200:
+        return slack_validator
+
     body = event["body"]
-    headers = event["headers"]
-    if ("X-Slack-Signature" not in headers) or ("X-Slack-Request-Timestamp" not in headers):
-        return {
-            'statusCode': 403,
-            'body': json.dumps({"reason": "No signature"})
-        }
-    received_signature = headers["X-Slack-Signature"]
-    slack_timestamp = headers["X-Slack-Request-Timestamp"]
-    if validate_payload_signature(body, received_signature, slack_timestamp):
-        response = post_to_ingest_api(body)
-        return {
-            'statusCode': response,
-            'body': ""
-        }
-    else:
-        return {
-            'statusCode': 403,
-            'body': json.dumps({"reason": "Invalid signature"})
-        }
+    response = post_to_ingest_api(body)
+    return {
+        'statusCode': response,
+        'body': ""
+    }
 
 
 def post_to_ingest_api(body):
@@ -39,15 +27,3 @@ def post_to_ingest_api(body):
         return response.getcode()
     except urllib.request.HTTPError:
         return 500
-
-
-def validate_payload_signature(body, received_signature, slack_timestamp,
-                               shared_secret=os.getenv("DATAPLATTFORM_SLACK_SECRET")):
-    """
-    As described by https://api.slack.com/docs/verifying-requests-from-slack
-    """
-    # TODO fail signature if timestamp is not recent?
-    basestring = ("v0:" + slack_timestamp + ":" + body).encode()
-    calculated_signature = "v0=" + hmac.new(shared_secret.encode(), basestring,
-                                            hashlib.sha256).hexdigest()
-    return hmac.compare_digest(calculated_signature, received_signature)
