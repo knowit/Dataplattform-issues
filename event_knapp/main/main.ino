@@ -13,9 +13,7 @@ const char* password = "pwd";
 const char* url = "";
 const char* ingest_api_key = "apikey";
 
-const char* post1 = "{\"button\": -1}";
-const char* post2 = "{\"button\": 0 }";
-const char* post3 = "{\"button\": 1 }";
+const int dips_input[6] = {14, 27, 26, 25, 33, 32};
 
 void setup() {
     Serial.begin(115200);
@@ -28,9 +26,17 @@ void setup() {
     pinMode(pin_btn2, INPUT);
     pinMode(pin_btn3, INPUT);
 
+    for (int i = 0; i < 6; i++) {
+        pinMode(dips_input[i], INPUT);
+    }
+
     Serial.println("Startup");
+    Serial.print("URL: ");
+    Serial.println(url);
     Serial.print("Connecting to ");
     Serial.println(ssid);
+    Serial.print("Password: ");
+    Serial.println(password);
 
     WiFi.begin(ssid, password);
 
@@ -64,14 +70,24 @@ void loop() {
             http.addHeader("Content-Type", "application/json");
             http.addHeader("x-api-key", ingest_api_key);
 
-            int response = 0;
+            String post = "{\"button\": ";
             if (btn1) {
-                response = http.POST(post1);
+                post += "-1, ";
             } else if (btn2) {
-                response = http.POST(post2);
+                post += "0, ";
             } else if (btn3) {
-                response = http.POST(post3);
+                post += "1, ";
             }
+            post += "\"event_code\": \"";
+            String event_code = "";
+            for (int i = 0; i < 6; i++) {
+                int pin_i = digitalRead(dips_input[i]);
+                event_code += String(pin_i);
+            }
+            post += event_code;
+            post += "\"}";
+            Serial.println(post);
+            int response = http.POST(post);
             digitalWrite(pin_b, LOW);
             if (response >= 200 && response < 300) {
                 digitalWrite(pin_g, HIGH);
@@ -95,3 +111,4 @@ void loop() {
         }
     }
 }
+
