@@ -4,6 +4,7 @@ custom:
   stage: ${opt:stage, self:provider.stage}
   project: Dataplattform-${self:custom.stage}
   slack_command_lambda: ${self:custom.project}-slack_command
+  slack_response_lambda: ${self:custom.project}-slack_response
 
 provider:
   name: aws
@@ -34,11 +35,29 @@ functions:
         - 'slack_command/*.py'
     environment:
       DATAPLATTFORM_SLACK_SECRET: ${ssm:dataplattform_slack_event_app_secret}
-      DATAPLATTFORM_SLACK_RESPONSE_FUNCTION: 'dataplattform_slack_response' # TODO
+      DATAPLATTFORM_SLACK_RESPONSE_FUNCTION: ${self:custom.slack_response_lambda}
     events:
       - http:
           path: dataplattform_slack_command
           method: post
+  slack_response:
+    handler: slack_response/slack_response.handler
+    name: ${self:custom.slack_response_lambda}
+    description: Slack Response Lambda
+    role: slackResponseRole
+    package:
+      include:
+        - 'slack_response/*.py'
+    environment:
+      DATAPLATTFORM_FAGKALENDER_ID: ${ssm:dataplattform_fagkalender_id}
+      DATAPLATTFORM_INGEST_URL: 
+        !Join
+        - ''
+        - - 'Fn::ImportValue': ${self:custom.project}-ingest-url
+          - EventType
+      DATAPLATTFORM_INGEST_APIKEY: ${ssm:dataplattform_slack_event_app_ingest_apikey}
+      SLACK_BOT_TOKEN: ${ssm:dataplattform_slack_event_oauth}
+      DATAPLATTFORM_EVENT_TABLE: dataplattform_event_codes-${self:custom.stage}
 
 resources:
   Resources:
@@ -64,8 +83,38 @@ resources:
                     - "lambda:InvokeFunction"
                     - "lambda:InvokeAsync"
                   Resource:
-                    #- 'Fn::ImportValue': ${self:custom.project}-dynamodb-rawtable-arn
-                    - arn:aws:lambda:eu-central-1:275823250475:function:dataplattform_slack_response
+                    - arn:aws:lambda:eu-central-1:275823250475:function:${self:custom.slack_response_lambda}
+                - Effect: Allow
+                  Action:
+                    - logs:CreateLogGroup
+                    - logs:CreateLogStream
+                    - logs:PutLogEvents
+                  Resource: "*"
+    slackResponseRole:
+      Type: AWS::IAM::Role
+      Properties:
+        RoleName: ${self:custom.project}-SlackResponseRole
+        AssumeRolePolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Principal:
+                Service:
+                  - lambda.amazonaws.com
+              Action: sts:AssumeRole
+        Policies:
+          - PolicyName: ${self:custom.project}-readWriteEventDynamoPolicy
+            PolicyDocument:
+              Version: '2012-10-17'
+              Statement:
+                - Effect: Allow
+                  Action:
+                    - "dynamodb:PutItem"
+                    - "dynamodb:GetItem"
+                    - "dynamodb:Scan"
+                    - "dynamodb:Query"
+                  Resource:
+                    - 'Fn::ImportValue': ${self:custom.project}-dynamodb-eventtable-arn
                 - Effect: Allow
                   Action:
                     - logs:CreateLogGroup

@@ -32,7 +32,8 @@ def handler(event, context):
     global client
     global table
     client = boto3.resource("dynamodb")
-    table = client.Table("dataplattform_event_codes")
+    table_name = os.getenv('DATAPLATTFORM_EVENT_TABLE')
+    table = client.Table(table_name)
 
     # Silence warning from google libraries
     logging.getLogger('googleapiclient.discovery_cache').setLevel(logging.ERROR)

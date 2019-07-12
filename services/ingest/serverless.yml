@@ -21,6 +21,8 @@ provider:
       value: ${ssm:dataplattform_slack_ingest_apikey}
     - name: ${self:custom.project}-github_ingest-apikey
       value: ${ssm:dataplattform_github_ingest_apikey}
+    - name: ${self:custom.project}-slack_event_app_ingest-apikey
+      value: ${ssm:dataplattform_slack_event_app_ingest_apikey}
   usagePlan:
     throttle: #TODO decide on some values
       burstLimit: 200
@@ -130,3 +132,14 @@ resources:
                     - dynamodb:PutItem
                   Resource:
                     - 'Fn::ImportValue': ${self:custom.project}-dynamodb-rawtable-arn
+  Outputs:
+    IngestURL:
+      Description: "Ingest URL"
+      Value:
+        Fn::Join:
+          - ""
+          - - "https://"
+            - Ref: ApiGatewayRestApi
+            - ".execute-api.${self:provider.region}.amazonaws.com/${self:custom.stage}/dataplattform_ingest/"
+      Export:
+        Name: ${self:custom.project}-ingest-url
