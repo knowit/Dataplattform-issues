@@ -1,0 +1,74 @@
+service: dataplattform-fetch
+
+custom:
+  stage: ${opt:stage, self:provider.stage}
+  project: Dataplattform-${self:custom.stage}
+  slack_command_lambda: ${self:custom.project}-slack_command
+
+provider:
+  name: aws
+  stage: dev
+  region: eu-central-1
+  runtime: python3.7
+  memorySize: 1024
+  timeout: 5
+  tags:
+    Project: ${self:custom.project}
+
+
+package:
+  individually: true
+  exclude:
+    - "./**"
+
+functions:
+  slack_command:
+    handler: slack_command/slack_command.lambda_handler
+    name: ${self:custom.slack_command_lambda}
+    description: Slack Command Lambda
+    role: slackCommandRole
+    layers:
+      - arn:aws:lambda:eu-central-1:275823250475:layer:Dataplattform-dev-slack_signature_validator:5 #TODO
+    package:
+      include:
+        - 'slack_command/*.py'
+    environment:
+      DATAPLATTFORM_SLACK_SECRET: ${ssm:dataplattform_slack_event_app_secret}
+      DATAPLATTFORM_SLACK_RESPONSE_FUNCTION: 'dataplattform_slack_response' # TODO
+    events:
+      - http:
+          path: dataplattform_slack_command
+          method: post
+
+resources:
+  Resources:
+    slackCommandRole:
+      Type: AWS::IAM::Role
+      Properties:
+        RoleName: ${self:custom.project}-SlackCommandRole
+        AssumeRolePolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Principal:
+                Service:
+                  - lambda.amazonaws.com
+              Action: sts:AssumeRole
+        Policies:
+          - PolicyName: ${self:custom.project}-invokeSlackResponsePolicy
+            PolicyDocument:
+              Version: '2012-10-17'
+              Statement:
+                - Effect: Allow
+                  Action:
+                    - "lambda:InvokeFunction"
+                    - "lambda:InvokeAsync"
+                  Resource:
+                    #- 'Fn::ImportValue': ${self:custom.project}-dynamodb-rawtable-arn
+                    - arn:aws:lambda:eu-central-1:275823250475:function:dataplattform_slack_response
+                - Effect: Allow
+                  Action:
+                    - logs:CreateLogGroup
+                    - logs:CreateLogStream
+                    - logs:PutLogEvents
+                  Resource: "*"

@@ -41,7 +41,7 @@ functions:
     description: Main ingest lambda
     role: ingestRole
     layers:
-      - arn:aws:lambda:eu-central-1:275823250475:layer:dev-timestamp_random:24 #TODO
+      - arn:aws:lambda:eu-central-1:275823250475:layer:Dataplattform-dev-timestamp_random:5 #TODO
       #- 'Fn::ImportValue': ${self:custom.project}-layer-timestamprandom-arn
     package:
       include:
@@ -58,7 +58,7 @@ functions:
     name: ${self:custom.slack_ingest_lambda}
     description: Slack webhook endpoint
     layers:
-      - arn:aws:lambda:eu-central-1:275823250475:layer:slack_signature_validator:1 #TODO
+      - arn:aws:lambda:eu-central-1:275823250475:layer:Dataplattform-dev-slack_signature_validator:5 #TODO
     package:
       include:
         - 'slack_ingest/*.py'

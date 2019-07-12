@@ -3,6 +3,7 @@ import urllib.parse
 import urllib.request
 import boto3
 import slack_signature_validator
+import os
 
 
 def lambda_handler(event, context):
@@ -83,7 +84,7 @@ def invoke_and_return(data, success_text="Vi jobber med saken..."):
     """
     client = boto3.client('lambda')
     response = client.invoke(
-        FunctionName='dataplattform_slack_response',
+        FunctionName=os.getenv('DATAPLATTFORM_SLACK_RESPONSE_FUNCTION'),
         InvocationType='Event',
         LogType='None',
         ClientContext='string',
