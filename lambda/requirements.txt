@@ -1,6 +1,7 @@
 # This requirements file is like a master-requirements file which installs all the dependencies needed for all the lambdas and the dependencies needed for testing.
 -r batch_job_aurora/requirements.txt
 -r slack_response/requirements.txt
+-r poller/ubw/requirements.txt
 
 # The lambdas don't need boto in their requirements file because it's already installed on amazon lambda.
 atomicwrites==1.3.0
