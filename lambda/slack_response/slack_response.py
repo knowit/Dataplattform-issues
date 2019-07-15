@@ -57,14 +57,14 @@ def handler(event, context):
         event_start = calendar_event['start']
         event_end = calendar_event['end']
         code_valid_from = int(datetime.datetime.now().timestamp())
-        code_valid_to = int(dateutil.parser.parse(event_end).timestamp())
+        event_end_timestamp = int(dateutil.parser.parse(event_end).timestamp())
         # Add one day to the end timestamp.
-        code_valid_to = code_valid_to + 24 * 60 * 60
+        code_valid_to = event_end_timestamp + 24 * 60 * 60
         event_name = calendar_event["summary"]
 
         # Try to create a new code for the event just clicked.
         create_code(event_id_clicked, event_name, user_id, event_start, event_end,
-                    code_valid_from, code_valid_to)
+                    code_valid_from, code_valid_to, event_end_timestamp)
         blocks = create_blocks(calendar_events)
         send_response_blocks(blocks, response_url)
 
@@ -89,8 +89,9 @@ def handler(event, context):
 
         status_code = save_event(event_id, number_of_people_attended, guild)
         success_code = 200 <= status_code < 300
-        text = "Tusen takk for tilbakemelding!" if success_code else "Noe gikk galt, kunne ikke " \
-                                                                     "lagre data."
+        success_text = f"Tusen takk for tilbakemelding! \nDu svarte at faggruppen var {guild} og" \
+            f" at {str(number_of_people_attended)} kom."
+        text = success_text if success_code else "Noe gikk galt, kunne ikke lagre data."
         blocks = [
             {
                 "type": "section",
@@ -210,7 +211,7 @@ def collision(event_code, code_valid_from, code_valid_to):
 
 
 def create_code(event_id, event_name, user_id, event_start, event_end, code_valid_from,
-                code_valid_to):
+                code_valid_to, event_end_timestamp):
     """
     :param event_id: the event_id fetched from google calendar.
     :param event_name: The name of the event.
@@ -218,6 +219,7 @@ def create_code(event_id, event_name, user_id, event_start, event_end, code_vali
     :param event_end: When the event ends.
     :param code_valid_from: When the code is valid and should be used, timestamp.
     :param code_valid_to: When the code is valid and should be used, timestamp.
+    :param event_end_timestamp: When the event is done, timestamp.
     :return: Returns either a new id for the calendar/ event ID or an existing one.
     """
     existing_code = get_code(event_id)
@@ -242,8 +244,7 @@ def create_code(event_id, event_name, user_id, event_start, event_end, code_vali
         'code_valid_from': code_valid_from,
         'code_valid_to': code_valid_to,
     })
-    # TODO: maybe the scheduled IM should be a bit later then just right after the event is done.
-    send_scheduled_im(event_name, user_id, event_id, code_valid_to)
+    send_scheduled_im(event_name, user_id, event_id, event_end_timestamp)
     return event_code
 
 
