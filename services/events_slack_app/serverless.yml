@@ -50,7 +50,7 @@ functions:
         - 'slack_response/*.py'
     environment:
       DATAPLATTFORM_FAGKALENDER_ID: ${ssm:dataplattform_fagkalender_id}
-      DATAPLATTFORM_INGEST_URL: 
+      DATAPLATTFORM_INGEST_URL:
         !Join
         - ''
         - - 'Fn::ImportValue': ${self:custom.project}-ingest-url
