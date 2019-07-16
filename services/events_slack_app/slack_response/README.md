@@ -32,3 +32,37 @@ Environment variabler du trenger for denne lambdaen er:
 * DATAPLATTFORM_FAGKALENDER_ID
 * DATAPLATTFORM_INGEST_APIKEY
 * DATAPLATTFORM_INGEST_URL
+
+
+## Setup Slack-appen
+1. Gå på https://api.slack.com/apps og trykk på `Create New App`
+2. Kall den f.eks ArrangementBot og velg hvilket workspace du skal lage appen i.
+3. 
+    Hent din `slack_command` endepunkt url. Kjør denne commanden.
+    ```bash
+    cd services/events_slack_app/
+    sls info
+    ```
+    Så vil du se at det er en URL under endpoints. Ta vare på den URLen.
+4.
+    Tilbake til api.slack nettsiden, under `Basic Information` så er det en `Signing Secret`. Denne må vi lagre i Amazon sin SSM. Dette gjøres med denne commanden:
+
+    ```bash
+    ssn ... TODO!!
+    ```
+5. 
+    Nå kan vi lage litt funksjonalitet på Slack appen. Dette gjøres under `Basic Information` og `Add features and functionality` og `Interactive Components`. Skru på denne og lim inn URLen du fikk fra steg 3 under `Request URL`. 
+6.
+    Så får å lage en slack command så går vi i `Basic Information` og `Add features and functionality` og `Slack Commands` og `Create New Command`. Command er `/arrangement` og Request URL er lik som den i forrige steg, altså den fra steg 3. Trykk `Save`.
+7.
+    Legg til en bot under `Basic Information` og `Add features and functionality` og `Bots`. Kall den `ArrangementBot` og always online om du vil det, og så lagre. 
+8.
+    Gå til `Basic Information` og `Add features and functionality` og `Permissions` og legg til et nytt permission scope `chat:write:bot` som gjør at du kan sende meldinger som botten du nettopp lagde.
+9. 
+    Trykk installer app i workspacet ditt.
+10. 
+    Lagre Bot brukern sin token i Amazon ssn. Du finner tokenen under `OAuth  & Permissions` og `Bot User OAuth Access Token` og så skriv denne commanden for å lagre den i Amazon SSN:
+
+    ```bash
+    ssn ... TODO!!
+    ```
