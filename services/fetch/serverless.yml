@@ -1,0 +1,87 @@
+service: dataplattform-fetch
+
+custom:
+  stage: ${opt:stage, self:provider.stage}
+  project: Dataplattform-${self:custom.stage}
+  get_docs_lambda: ${self:custom.project}-get_docs
+
+provider:
+  name: aws
+  stage: dev
+  region: eu-central-1
+  runtime: python3.7
+  memorySize: 1024
+  timeout: 15
+  apiKeys:
+    - ${self:custom.project}-fetch-key
+  usagePlan:
+    throttle: #TODO decide on some values
+      burstLimit: 200
+      rateLimit: 50
+  tags:
+    Project: ${self:custom.project}
+
+
+package:
+  individually: true
+  exclude:
+    - "./**"
+
+functions:
+  get_docs:
+    handler: get_docs/get_docs.handler
+    name: ${self:custom.get_docs_lambda}
+    description: get_docs Lambda
+    role: getDocsRole
+    layers:
+      - arn:aws:lambda:eu-central-1:275823250475:layer:Dataplattform-prod-timestamp_random:1
+    package:
+      include:
+        - 'get_docs/*.py'
+    environment:
+      DATAPLATTFORM_RAW_TABLENAME: dataplattform-${self:custom.stage}
+    events:
+      - http:
+          path: get_docs/{type}
+          method: get
+          private: true
+          cors: true
+
+resources:
+  Resources:
+    getDocsRole:
+      Type: AWS::IAM::Role
+      Properties:
+        RoleName: ${self:custom.project}-GetDocsRole
+        AssumeRolePolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Principal:
+                Service:
+                  - lambda.amazonaws.com
+              Action: sts:AssumeRole
+        Policies:
+          - PolicyName: ${self:custom.project}-dynamodbReadOnlyPolicy
+            PolicyDocument:
+              Version: '2012-10-17'
+              Statement:
+                - Effect: Allow
+                  Action:
+                    - dynamodb:BatchGetItem
+                    - dynamodb:DescribeTable
+                    - dynamodb:GetItem
+                    - dynamodb:Scan
+                    - dynamodb:Query
+                  Resource:
+                    - 'Fn::ImportValue': ${self:custom.project}-dynamodb-rawtable-arn
+                - Effect: Allow
+                  Action:
+                    - logs:CreateLogGroup
+                    - logs:CreateLogStream
+                    - logs:PutLogEvents
+                  Resource: "*"
+                - Effect: Allow
+                  Action:
+                    - "s3:*" #TODO find out which ones we actually need
+                  Resource: "*"
