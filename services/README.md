@@ -23,5 +23,6 @@ før > etter:
 * dynamodb > events_slack_app
 * common_layers > ingest
 * common_layers > fetch
+* ingest > events_slack_app
 
 Kort sagt må ```dynamodb``` og ```common_layers``` deployeres først

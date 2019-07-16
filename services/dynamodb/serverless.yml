@@ -3,8 +3,7 @@ service: dataplattform-dynamodb
 custom:
   stage: ${opt:stage, self:provider.stage}
   project: Dataplattform-${self:custom.stage}
-  rawTable: dataplattform-${self:custom.stage}
-  eventTable: dataplattform_event_codes-${self:custom.stage}
+  rawTable: ${self:custom.project}
 
 provider:
   name: aws
@@ -32,19 +31,7 @@ resources:
         ProvisionedThroughput:
           ReadCapacityUnits: 10
           WriteCapacityUnits: 5
-    EventTable:
-      Type: AWS::DynamoDB::Table
-      Properties:
-        TableName: ${self:custom.eventTable}
-        AttributeDefinitions:
-          - AttributeName: event_id
-            AttributeType: S
-        KeySchema:
-          - AttributeName: event_id
-            KeyType: HASH
-        ProvisionedThroughput:
-          ReadCapacityUnits: 5
-          WriteCapacityUnits: 5
+
   Outputs: #TODO export actual table names as well?
     RawTableArn:
       Value:
@@ -53,11 +40,3 @@ resources:
           - Arn
       Export:
         Name: ${self:custom.project}-dynamodb-rawtable-arn
-    EventTableArn:
-      Value:
-        Fn::GetAtt:
-          - EventTable
-          - Arn
-      Export:
-        Name: ${self:custom.project}-dynamodb-eventtable-arn
-

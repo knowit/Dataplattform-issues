@@ -17,6 +17,7 @@ layers:
     path: timestamp_random
     name: ${self:custom.project}-timestamp_random
     description: Generate unique ids
+    retain: true
     compatibleRuntimes:
       - python3.7
 
@@ -24,18 +25,6 @@ layers:
     path: slack_signature_validator
     name: ${self:custom.project}-slack_signature_validator
     description: Validate that requests are made from Slack
+    retain: true
     compatibleRuntimes:
       - python3.7
-
-resources:
-  Outputs:
-    TimestampRandomArn:
-      Value:
-        Ref: TimestampRandomLambdaLayer
-      Export:
-        Name: ${self:custom.project}-layer-timestamprandom-arn
-    SlackSignatureValidatorArn:
-      Value:
-        Ref: SlackSignatureValidatorLambdaLayer
-      Export:
-        Name: ${self:custom.project}-layer-slacksignaturevalidator-arn

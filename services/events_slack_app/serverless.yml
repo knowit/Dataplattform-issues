@@ -5,6 +5,10 @@ custom:
   project: Dataplattform-${self:custom.stage}
   slack_command_lambda: ${self:custom.project}-slack_command
   slack_response_lambda: ${self:custom.project}-slack_response
+  eventTable: ${self:custom.project}-event_codes
+  pythonRequirements:
+    useDownloadCache: true
+    useStaticCache: true
 
 provider:
   name: aws
@@ -15,7 +19,6 @@ provider:
   timeout: 5
   tags:
     Project: ${self:custom.project}
-
 
 package:
   individually: true
@@ -29,7 +32,7 @@ functions:
     description: Slack Command Lambda
     role: slackCommandRole
     layers:
-      - arn:aws:lambda:eu-central-1:275823250475:layer:Dataplattform-dev-slack_signature_validator:5 #TODO
+      - arn:aws:lambda:eu-central-1:275823250475:layer:Dataplattform-prod-slack_signature_validator:1
     package:
       include:
         - 'slack_command/*.py'
@@ -41,13 +44,15 @@ functions:
           path: dataplattform_slack_command
           method: post
   slack_response:
-    handler: slack_response/slack_response.handler
+    handler: slack_response.handler
+    module: slack_response
     name: ${self:custom.slack_response_lambda}
     description: Slack Response Lambda
     role: slackResponseRole
     package:
       include:
         - 'slack_response/*.py'
+        - 'slack_response/creds.json'
     environment:
       DATAPLATTFORM_FAGKALENDER_ID: ${ssm:dataplattform_fagkalender_id}
       DATAPLATTFORM_INGEST_URL:
@@ -57,7 +62,7 @@ functions:
           - EventType
       DATAPLATTFORM_INGEST_APIKEY: ${ssm:dataplattform_slack_event_app_ingest_apikey}
       SLACK_BOT_TOKEN: ${ssm:dataplattform_slack_event_oauth}
-      DATAPLATTFORM_EVENT_TABLE: dataplattform_event_codes-${self:custom.stage}
+      DATAPLATTFORM_EVENT_TABLE: ${self:custom.eventTable}
 
 resources:
   Resources:
@@ -114,10 +119,28 @@ resources:
                     - "dynamodb:Scan"
                     - "dynamodb:Query"
                   Resource:
-                    - 'Fn::ImportValue': ${self:custom.project}-dynamodb-eventtable-arn
+                    - Fn::GetAtt:
+                      - EventTable
+                      - Arn
                 - Effect: Allow
                   Action:
                     - logs:CreateLogGroup
                     - logs:CreateLogStream
                     - logs:PutLogEvents
                   Resource: "*"
+    EventTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:custom.eventTable}
+        AttributeDefinitions:
+          - AttributeName: event_id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: event_id
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 5
+          WriteCapacityUnits: 5
+
+plugins:
+  - serverless-python-requirements

@@ -43,13 +43,12 @@ functions:
     description: Main ingest lambda
     role: ingestRole
     layers:
-      - arn:aws:lambda:eu-central-1:275823250475:layer:Dataplattform-dev-timestamp_random:5 #TODO
-      #- 'Fn::ImportValue': ${self:custom.project}-layer-timestamprandom-arn
+      - arn:aws:lambda:eu-central-1:275823250475:layer:Dataplattform-prod-timestamp_random:1
     package:
       include:
         - 'ingest/*.py'
     environment:
-      DATAPLATTFORM_RAW_TABLENAME: dataplattform-${self:custom.stage}
+      DATAPLATTFORM_RAW_TABLENAME: ${self:custom.project}
     events:
       - http:
           path: dataplattform_ingest/{type}
@@ -60,7 +59,7 @@ functions:
     name: ${self:custom.slack_ingest_lambda}
     description: Slack webhook endpoint
     layers:
-      - arn:aws:lambda:eu-central-1:275823250475:layer:Dataplattform-dev-slack_signature_validator:5 #TODO
+      - arn:aws:lambda:eu-central-1:275823250475:layer:Dataplattform-prod-slack_signature_validator:1
     package:
       include:
         - 'slack_ingest/*.py'
