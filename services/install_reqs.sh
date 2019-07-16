@@ -1,5 +1,4 @@
 pip install -r requirements.txt
-pip install -r events_slack_app/slack_response/requirements.txt
 pip install common_layers/timestamp_random/python/
 pip install common_layers/slack_signature_validator/python/
 pip install ingest/ingest/

@@ -11,7 +11,7 @@ provider:
   region: eu-central-1
   runtime: python3.7
   memorySize: 1024
-  timeout: 5
+  timeout: 15
   apiKeys:
     - ${self:custom.project}-fetch-key
   usagePlan:

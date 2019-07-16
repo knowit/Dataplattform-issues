@@ -12,7 +12,6 @@ provider:
     Project: ${self:custom.project}
 
 layers:
-  # TODO set layers to retain: true and avoid hardcoding them in ingest and fetch
   TimestampRandom:
     path: timestamp_random
     name: ${self:custom.project}-timestamp_random
