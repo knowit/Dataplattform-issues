@@ -1,0 +1,42 @@
+service: dataplattform-dynamodb
+
+custom:
+  stage: ${opt:stage, self:provider.stage}
+  project: Dataplattform-${self:custom.stage}
+  rawTable: ${self:custom.project}
+
+provider:
+  name: aws
+  stage: dev
+  region: eu-central-1
+  tags:
+    Project: ${self:custom.project}
+
+resources:
+  Resources:
+    RawTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:custom.rawTable}
+        AttributeDefinitions:
+          - AttributeName: type
+            AttributeType: S
+          - AttributeName: timestamp_random
+            AttributeType: B
+        KeySchema:
+          - AttributeName: type
+            KeyType: HASH
+          - AttributeName: timestamp_random
+            KeyType: RANGE
+        ProvisionedThroughput:
+          ReadCapacityUnits: 10
+          WriteCapacityUnits: 5
+
+  Outputs: #TODO export actual table names as well?
+    RawTableArn:
+      Value:
+        Fn::GetAtt:
+          - RawTable
+          - Arn
+      Export:
+        Name: ${self:custom.project}-dynamodb-rawtable-arn

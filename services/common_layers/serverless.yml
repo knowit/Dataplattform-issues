@@ -1,0 +1,29 @@
+service: dataplattform-layers
+
+custom:
+  stage: ${opt:stage, self:provider.stage}
+  project: Dataplattform-${self:custom.stage}
+
+provider:
+  name: aws
+  stage: dev
+  region: eu-central-1
+  tags:
+    Project: ${self:custom.project}
+
+layers:
+  TimestampRandom:
+    path: timestamp_random
+    name: ${self:custom.project}-timestamp_random
+    description: Generate unique ids
+    retain: true
+    compatibleRuntimes:
+      - python3.7
+
+  SlackSignatureValidator:
+    path: slack_signature_validator
+    name: ${self:custom.project}-slack_signature_validator
+    description: Validate that requests are made from Slack
+    retain: true
+    compatibleRuntimes:
+      - python3.7
