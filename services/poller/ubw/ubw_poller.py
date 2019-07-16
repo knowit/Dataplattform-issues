@@ -14,7 +14,7 @@ def lambda_handler(event, context):
     global client
     global table
     client = boto3.resource("dynamodb")
-    table = client.Table("dataplattform_data_polling_status")
+    table = client.Table(os.getenv("DATAPLATTFORM_POLLING_STATUS_TABLENAME"))
 
     last_inserted_doc = fetch_last_inserted_doc()
 

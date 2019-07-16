@@ -108,6 +108,8 @@ venv.bak/
 
 # Compiled zip modules.
 **.zip
+
 **/.serverless/
-**/.vscode/
+**/.vscode/ 
+**/node_modules/
 
