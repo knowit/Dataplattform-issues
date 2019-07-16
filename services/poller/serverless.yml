@@ -1,0 +1,104 @@
+service: dataplattform-poller
+
+custom:
+  stage: ${opt:stage, self:provider.stage}
+  project: Dataplattform-${self:custom.stage}
+  ubw_lambda: ${self:custom.project}-ubw_poller
+  pollingStatusTable: ${self:custom.project}-polling_status
+  pythonRequirements:
+    useDownloadCache: true
+    useStaticCache: true
+
+provider:
+  name: aws
+  stage: dev
+  region: eu-central-1
+  runtime: python3.7
+  memorySize: 1024
+  timeout: 15
+  tags:
+    Project: ${self:custom.project}
+
+
+package:
+  individually: true
+  exclude:
+    - "./**"
+
+functions:
+  ubw:
+    handler: ubw_poller.lambda_handler
+    module: ubw
+    name: ${self:custom.ubw_lambda}
+    description: ubw Lambda
+    role: ubwRole
+    package:
+      include:
+        - 'ubw/*.py'
+    environment:
+      DATAPLATTFORM_POLLING_STATUS_TABLENAME: ${self:custom.pollingStatusTable}
+      DATAPLATTFORM_INGEST_APIKEY: ${ssm:dataplattform_polling_ingest_apikey}
+      DATAPLATTFORM_INGEST_URL:
+        !Join
+        - ''
+        - - 'Fn::ImportValue': ${self:custom.project}-ingest-url
+          - UBWType
+      UBW_CLIENT: ${ssm:dataplattform_ubw_client}
+      UBW_PASSWORD: ${ssm:dataplattform_ubw_password}
+      UBW_TEMPLATE_ID: 2528
+      UBW_URL: ${ssm:dataplattform_ubw_url}
+      UBW_USERNAME: ${ssm:dataplattform_ubw_username}
+    events:
+      - schedule: rate(1 day)
+
+resources:
+  Resources:
+    ubwRole:
+      Type: AWS::IAM::Role
+      Properties:
+        RoleName: ${self:custom.project}-UBWRole
+        AssumeRolePolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Principal:
+                Service:
+                  - lambda.amazonaws.com
+              Action: sts:AssumeRole
+        Policies:
+          - PolicyName: ${self:custom.project}-dynamodbReadOnlyPolicy
+            PolicyDocument:
+              Version: '2012-10-17'
+              Statement:
+                - Effect: Allow
+                  Action:
+                    - "dynamodb:PutItem"
+                    - "dynamodb:GetItem"
+                    - "dynamodb:Scan"
+                    - "dynamodb:Query"
+                  Resource:
+                    - Fn::GetAtt:
+                      - PollingStatusTable
+                      - Arn
+                - Effect: Allow
+                  Action:
+                    - logs:CreateLogGroup
+                    - logs:CreateLogStream
+                    - logs:PutLogEvents
+                  Resource: "*"
+    PollingStatusTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:custom.pollingStatusTable}
+        AttributeDefinitions:
+          - AttributeName: type
+            AttributeType: S
+        KeySchema:
+          - AttributeName: type
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 5
+          WriteCapacityUnits: 5
+
+plugins:
+  - serverless-python-requirements
