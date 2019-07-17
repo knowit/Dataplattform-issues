@@ -39,7 +39,7 @@ functions:
       include:
         - 'get_docs/*.py'
     environment:
-      DATAPLATTFORM_RAW_TABLENAME: dataplattform-${self:custom.stage}
+      DATAPLATTFORM_RAW_TABLENAME: ${self:custom.project}
     events:
       - http:
           path: get_docs/{type}

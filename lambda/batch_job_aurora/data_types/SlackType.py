@@ -6,7 +6,6 @@ import urllib.parse
 
 # This dictionary will be used for caching information about a specific channel id and therefore
 # saving a lot of time using the slack API.
-# TODO: should we only save the information needed instead of the whole user dictionary?
 slack_channel_id_to_channel_info = {}
 
 
