@@ -29,6 +29,7 @@ def handler(event, context):
     docs = get_docs(table, data_type, timestamp_from, timestamp_to)
     docs = docs_to_json(docs)
     url = upload_data_to_bucket(docs)
+    body = format_response(docs, url)
     return {
         'statusCode': 200,
         'headers': {
@@ -36,8 +37,23 @@ def handler(event, context):
             "Access-Control-Allow-Headers": "Content-Type",
             "Access-Control-Allow-Methods": "OPTIONS,POST,GET"
         },
-        'body': json.dumps({"url": url})
+        'body': body
     }
+
+
+def format_response(docs, url, n=25):
+    """
+    :param docs: All the raw documents sorted.
+    :param url: The presigned URL containing all the documents.
+    :param n: The number of recent documents that should be returned in addition to the url.
+    :return: the body, formatted as a json string.
+    """
+    # Invert the list and slice the most n recent ones.
+    most_recent_docs = docs[:-(n + 1):-1]
+    return json.dumps({
+        "url": url,
+        "docs": most_recent_docs
+    })
 
 
 def docs_to_json(docs):
