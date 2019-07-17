@@ -234,7 +234,7 @@ class GithubType(AbstractType):
         ("ref", str): ["data", "ref"]
     }
 
-    def accept_data(self, doc):
+    def accept_document(self, doc):
         """
         :param doc: Which doc should be evaluated.
         :return: Returns true on every event that is an actual commit.

@@ -39,3 +39,4 @@ For å kjøre denne lambdaen så trenger du disse environment-variablene:
 * ```DATAPLATTFORM_AURORA_USER``` er brukernavnet til en user på Aurora db.
 * ```DATAPLATTFORM_AURORA_PASSWORD``` er passordet til Aurora db.
 * ```DATAPLATTFORM_AURORA_SLACK_TOKEN``` er oAuth tokenet til Slack.
+* ```DATAPLATTFORM_EVENT_CODE_TABLE``` er table-navnet som holder styr på events m/ slack-botten

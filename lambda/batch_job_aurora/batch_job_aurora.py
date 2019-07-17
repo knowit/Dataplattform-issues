@@ -54,9 +54,10 @@ def get_relevant_attrs(docs, type, sql_connection):
     check_table_exists(sql_connection, type, data_type_object)
 
     for doc in docs:
-        if data_type_object.accept_data(doc):
+        if data_type_object.accept_document(doc):
             column_values = data_type_object.get_column_values(doc)
-            output.append(column_values)
+            if data_type_object.accept_row(column_values):
+                output.append(column_values)
     return output
 
 
