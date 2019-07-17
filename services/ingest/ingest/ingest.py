@@ -31,7 +31,7 @@ def insert_doc(table, type, data=None, timestamp=None):
 
     item = {
         "type": type,
-        "timestamp_random": tr.get_timestamp_random(timestamp),
+        "timestamp_random": tr.get_timestamp_random(),
         "timestamp": timestamp
     }
     if data is not None:
