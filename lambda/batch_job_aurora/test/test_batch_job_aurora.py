@@ -37,17 +37,17 @@ def test_github_sql_create_table():
     sql = github_type.get_create_table_sql("GithubType")
     sql_correct = """
         CREATE TABLE GithubType (
-            id VARCHAR(24) NOT NULL,
-            timestamp BIGINT NOT NULL,
-            repository_name TEXT,
-            github_username TEXT,
-            commit_id TEXT,
-            commit_timestamp TEXT,
-            stargazers_count INT,
-            language TEXT,
-            forks_count INT,
-            open_issues_count INT,
-            ref TEXT,
+            `id` VARCHAR(24) NOT NULL,
+            `timestamp` BIGINT NOT NULL,
+            `repository_name` TEXT,
+            `github_username` TEXT,
+            `commit_id` TEXT,
+            `commit_timestamp` TEXT,
+            `stargazers_count` INT,
+            `language` TEXT,
+            `forks_count` INT,
+            `open_issues_count` INT,
+            `ref` TEXT,
             PRIMARY KEY (id)
         );"""
 
