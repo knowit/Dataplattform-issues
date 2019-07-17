@@ -8,5 +8,5 @@ class EventType(AbstractType):
         ("event_start", str): ["data", "event_start"],
         ("event_end", str): ["data", "event_end"],
         ("number_of_people", int): ["data", "number_of_people"],
-        ("guild", str): ["data", "guild"]
+        ("group", str): ["data", "guild"]
     }
