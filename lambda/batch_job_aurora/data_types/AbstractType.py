@@ -28,7 +28,7 @@ class AbstractType:
 
     def accept_row(self, row):
         """
-        :param row: The row that should be evaluated. Map of column name -> valye
+        :param row: The row that should be evaluated. Map of column name -> value
         :return: Returns true always here, override the function in the subclass if you only
         want to filter out some records.
         """
@@ -79,6 +79,7 @@ class AbstractType:
             if attr_name in ["id", "timestamp"]:
                 # We can safely skip the default attributes.
                 continue
+            attr_name = "`" + attr_name + "`"
             if attr_type == str:
                 columns_and_types += attr_name + " TEXT,\n"
             elif attr_type == int:
@@ -90,8 +91,8 @@ class AbstractType:
 
         sql = f"""
                 CREATE TABLE {table_name} (
-                    id VARCHAR(24) NOT NULL,
-                    timestamp BIGINT NOT NULL,
+                    `id` VARCHAR(24) NOT NULL,
+                    `timestamp` BIGINT NOT NULL,
                     {columns_and_types}
                     PRIMARY KEY (id)
                 );
