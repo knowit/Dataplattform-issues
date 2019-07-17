@@ -1,0 +1,82 @@
+service: dataplattform-structured-mysql
+
+custom:
+  stage: ${opt:stage, self:provider.stage}
+  project: Dataplattform-${self:custom.stage}
+  batch_job_lambda: ${self:custom.project}-batch_job_mysql
+  pythonRequirements:
+    useDownloadCache: true
+    useStaticCache: true
+
+provider:
+  name: aws
+  stage: dev
+  region: eu-central-1
+  runtime: python3.7
+  memorySize: 1024
+  timeout: 30
+  tags:
+    Project: ${self:custom.project}
+
+
+package:
+  individually: true
+  exclude:
+    - "./**"
+
+functions:
+  batch_job_mysql:
+    handler: batch_job_aurora.handler
+    module: batch_job_aurora
+    name: ${self:custom.batch_job_lambda}
+    description: MySQL insert batch job
+    role: batchJobRole
+    package:
+      include:
+        - 'batch_job_aurora/*.py'
+    environment:
+      DATAPLATTFORM_FETCH_APIKEY: ${ssm:dataplattform_mysql_fetch_apikey}
+      DATAPLATTFORM_FETCH_URL:
+        'Fn::ImportValue': ${self:custom.project}-get-docs-url
+      DATAPLATTFORM_AURORA_DB_NAME: ${self:custom.project}
+      DATAPLATTFORM_AURORA_PORT: 3306
+      DATAPLATTFORM_AURORA_SLACK_TOKEN: ${ssm:dataplattform_slack_event_oauth}
+      DATAPLATTFORM_AURORA_USER: dataplattform
+      DATAPLATTFORM_EVENT_CODE_TABLE:
+        'Fn::ImportValue': ${self:custom.project}-dynamodb-eventtable-name
+      DATAPLATTFORM_AURORA_HOST: todo #TODO
+      DATAPLATTFORM_AURORA_PASSWORD: todo #TODO
+    events:
+      - schedule: rate(1 hour)
+
+resources:
+  Resources:
+    batchJobRole:
+      Type: AWS::IAM::Role
+      Properties:
+        RoleName: ${self:custom.project}-BatchJobRole
+        AssumeRolePolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Principal:
+                Service:
+                  - lambda.amazonaws.com
+              Action: sts:AssumeRole
+        ManagedPolicyArns:
+          - 'arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
+        Policies:
+          - PolicyName: ${self:custom.project}-
+            PolicyDocument:
+              Version: '2012-10-17'
+              Statement:
+                - Effect: Allow
+                  Action:
+                    - dynamodb:GetItem
+                    - dynamodb:Scan
+                    - dynamodb:Query
+                  Resource:
+                    - 'Fn::ImportValue': ${self:custom.project}-dynamodb-eventtable-arn
+
+plugins:
+  - serverless-python-requirements
