@@ -71,17 +71,20 @@ class AbstractType:
             if attr_name in ["id", "timestamp"]:
                 # We can safely skip the default attributes.
                 continue
+            attr_name = "`" + attr_name + "`"
             if attr_type == str:
                 columns_and_types += attr_name + " TEXT,\n"
             elif attr_type == int:
                 columns_and_types += attr_name + " INT,\n"
+            elif attr_type == float:
+                columns_and_types += attr_name + " DECIMAL(20,2),\n"
             else:
                 print("Unsupported type.")
 
         sql = f"""
                 CREATE TABLE {table_name} (
-                    id VARCHAR(24) NOT NULL,
-                    timestamp BIGINT NOT NULL,
+                    `id` VARCHAR(24) NOT NULL,
+                    `timestamp` BIGINT NOT NULL,
                     {columns_and_types}
                     PRIMARY KEY (id)
                 );

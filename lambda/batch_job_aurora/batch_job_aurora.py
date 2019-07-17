@@ -105,7 +105,7 @@ def insert_data_into_db(sql_connection, datas, type):
         param_list = ["%(" + column + ")s" for column in column_list]
 
         params = ", ".join(param_list)
-        columns = ", ".join(column_list)
+        columns = "`" + "`, `".join(column_list) + "`"
         sql = "INSERT INTO `" + type + "` (" + columns + ") VALUES (" + params + ");"
         try:
             res = cursor.execute(sql, data)
