@@ -1,3 +1,5 @@
+import os
+
 import boto3
 from boto3.dynamodb.conditions import Key
 from data_types.AbstractType import AbstractType
@@ -14,7 +16,8 @@ def get_events(event_code):
 
 def fetch_events(event_code):
     client = boto3.resource("dynamodb")
-    table = client.Table("dataplattform_event_codes")
+    table_name = os.getenv("DATAPLATTFORM_EVENT_CODE_TABLE")
+    table = client.Table(table_name)
 
     key_expression = Key('event_code').eq(event_code)
 
@@ -33,8 +36,8 @@ def get_event(event_code, timestamp):
     """Get the event to match with an event rating"""
     events = get_events(event_code)
     for event in events:
-        ts_from = event["timestamp_from"]
-        ts_to = event["timestamp_to"]
+        ts_from = event["code_valid_from"]
+        ts_to = event["code_valid_to"]
         if ts_from < timestamp < ts_to:
             return event
     return None
