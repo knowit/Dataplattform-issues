@@ -1,16 +1,24 @@
 import os
 
 import boto3
+import datetime
 from boto3.dynamodb.conditions import Key
 from data_types.AbstractType import AbstractType
 
 # Map event_code -> [event objects] (several events may share event code)
 events_cache = {}
+last_fetch = 0
 
 
 def get_events(event_code):
+    global last_fetch
+    current_time = int(datetime.datetime.now().timestamp())
+    if (current_time - 60) > last_fetch:
+        global events_cache
+        events_cache = {}
     if event_code not in events_cache:
         fetch_events(event_code)
+        last_fetch = current_time
     return events_cache[event_code]
 
 
@@ -32,9 +40,10 @@ def fetch_events(event_code):
     events_cache[event_code] = items
 
 
-def get_event(event_code, timestamp):
+def get_event(event_code, timestamp, events=None):
     """Get the event to match with an event rating"""
-    events = get_events(event_code)
+    if not events:
+        events = get_events(event_code)
     for event in events:
         ts_from = event["code_valid_from"]
         ts_to = event["code_valid_to"]
