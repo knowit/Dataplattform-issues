@@ -234,7 +234,8 @@ def create_code(event_id, event_name, user_id, event_start, event_end, code_vali
 
     if collision(event_code, code_valid_from, code_valid_to):
         # If there is a collision for this specific event_code then we retry.
-        return create_code(event_id, event_name, user_id, code_valid_from, code_valid_to)
+        return create_code(event_id, event_name, user_id, event_start, event_end, code_valid_from,
+                           code_valid_to, event_end_timestamp)
 
     table.put_item(Item={
         'event_id': event_id,
