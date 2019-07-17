@@ -31,6 +31,11 @@ def handler(event, context):
     url = upload_data_to_bucket(docs)
     return {
         'statusCode': 200,
+        'headers': {
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Headers": "Content-Type",
+            "Access-Control-Allow-Methods": "OPTIONS,POST,GET"
+        },
         'body': json.dumps({"url": url})
     }
 
