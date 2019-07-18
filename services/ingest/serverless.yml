@@ -27,6 +27,8 @@ provider:
       value: ${ssm:dataplattform_slack_event_app_ingest_apikey}
     - name: ${self:custom.project}-polling_ingest_apikey
       value: ${ssm:dataplattform_polling_ingest_apikey}
+    - name: ${self:custom.project}-travis_ingest_apikey
+      value: ${ssm:dataplattform_travis_ingest_apikey}
   usagePlan:
     throttle: #TODO decide on some values
       burstLimit: 200
@@ -152,6 +154,11 @@ resources:
             - ".execute-api.${self:provider.region}.amazonaws.com/${self:custom.stage}/dataplattform_ingest/"
       Export:
         Name: ${self:custom.project}-ingest-url
+    TravisIngestKey:
+      Description: "Ingest key for automated integration tests"
+      Value: ${ssm:dataplattform_travis_ingest_apikey}
+      Export:
+        Name: ${self:custom.project}-travis-ingest-apikey
 
 plugins:
   - serverless-stack-output
