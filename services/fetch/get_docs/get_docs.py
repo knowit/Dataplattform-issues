@@ -18,18 +18,25 @@ def handler(event, context):
 
     timestamp_from = 0
     timestamp_to = 2147483647
+    just_url = False
     if params:
         if "timestamp_from" in params:
             timestamp_from = int(params["timestamp_from"])
         if "timestamp_to" in params:
             timestamp_to = int(params["timestamp_to"])
+        if "just_url" in params and params["just_url"].lower() == "true":
+            just_url = True
         else:
             # Todo some error message here, wrong parameters.
             pass
     docs = get_docs(table, data_type, timestamp_from, timestamp_to)
     docs = docs_to_json(docs)
     url = upload_data_to_bucket(docs)
-    body = format_response(docs, url)
+    if just_url:
+        body = format_response(docs, url, n=0)
+    else:
+        body = format_response(docs, url)
+
     return {
         'statusCode': 200,
         'headers': {
@@ -51,8 +58,8 @@ def format_response(docs, url, n=25):
     # Invert the list and slice the most n recent ones.
     most_recent_docs = docs[:-(n + 1):-1]
     return json.dumps({
-        "url": url,
-        "docs": most_recent_docs
+        "all_docs_url": url,
+        "most_recent_25_docs": most_recent_docs
     })
 
 
