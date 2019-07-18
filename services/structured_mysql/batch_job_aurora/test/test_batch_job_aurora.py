@@ -9,7 +9,7 @@ import re
 def test_format_url():
     base_url = "http://example.org/"
     data_type = "GithubType"
-    correct_url = "http://example.org/GithubType?timestamp_from=123&timestamp_to=789"
+    correct_url = "http://example.org/GithubType?timestamp_from=123&timestamp_to=789&just_url=True"
     timestamp_from = 123
     timestamp_to = 789
     url = batch_job_aurora.format_url(base_url, data_type, timestamp_from, timestamp_to)
