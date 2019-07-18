@@ -3,6 +3,15 @@
 # This list is sorted in the way we need to deploy the services.
 export services=("dynamodb/" "common_layers/" "ingest/" "fetch/" "events_slack_app/" "poller/")
 
+
+# Check if you have a package.json file then you might need to update the npm packages.
+check_npm_modules() {
+    if [ -f "package.json" ]; then
+        npm install
+    fi
+}
+
+
 if [ "$1" != "" ]; then
     if [ "$2" = "remove" ]; then
         for (( idx=${#services[@]}-1 ; idx>=0 ; idx-- )) ; do
@@ -10,6 +19,7 @@ if [ "$1" != "" ]; then
             echo ''
             echo 'Removing' "${services[idx]}"
             echo ''
+            check_npm_modules
             sls remove --stage $1
             cd ..
         done
@@ -20,6 +30,7 @@ if [ "$1" != "" ]; then
             echo ''
             echo 'Deploying' $service
             echo ''
+            check_npm_modules
             sls deploy --stage $1
             exit_status=$?
             cd ..
