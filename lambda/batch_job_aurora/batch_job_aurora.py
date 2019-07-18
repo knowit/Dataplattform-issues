@@ -1,5 +1,6 @@
 import json
 import urllib.request
+import urllib.parse
 import os
 import pymysql
 from datetime import datetime as dt
@@ -135,12 +136,17 @@ def fetch_data_url(url):
     return json.loads(response2.read().decode())
 
 
-def format_url(base_url, type, timestamp_from, timestamp_to):
+def format_url(base_url, type, timestamp_from, timestamp_to, just_url=True):
     """
     :return: A formatted url.
     """
-    return base_url + type + "?timestamp_from=" + str(timestamp_from) + "&timestamp_to=" + str(
-        timestamp_to)
+    params = {
+        "timestamp_from": timestamp_from,
+        "timestamp_to": timestamp_to,
+        "just_url": just_url
+    }
+    query = urllib.parse.urlencode(params)
+    return base_url + type + "?" + query
 
 
 def main(types, timestamp_from, timestamp_to):
