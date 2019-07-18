@@ -8,3 +8,4 @@ pip install fetch/get_docs/
 pip install events_slack_app/slack_response/
 pip install events_slack_app/slack_command/
 pip install poller/ubw/
+pip install structured_mysql/batch_job_aurora
