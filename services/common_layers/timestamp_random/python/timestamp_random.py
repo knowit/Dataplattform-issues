@@ -13,7 +13,9 @@ def get_timestamp_random(timestamp=None, random_value=None):
         return number.to_bytes(bytes, 'big')
 
     if timestamp is None:
-        timestamp = int(dt.now().timestamp())
+        timestamp = int(dt.now().timestamp() * 1_000_000)
+    else:
+        timestamp *= 1_000_000
 
     if random_value is None:
         random_value = random.getrandbits(64)
