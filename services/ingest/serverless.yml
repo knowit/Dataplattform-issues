@@ -16,7 +16,7 @@ provider:
   timeout: 5
   role: arn:aws:iam::275823250475:role/dataplattform_basic_lambda #TODO set up roles using serverless
   apiKeys:
-    - ${self:custom.project}-ingest-key
+    - name: ${self:custom.project}-ingest-key
     - name: ${self:custom.project}-slack_ingest-apikey
       value: ${ssm:dataplattform_slack_ingest_apikey}
     - name: ${self:custom.project}-github_ingest-apikey
@@ -114,7 +114,7 @@ resources:
     ingestRole:
       Type: AWS::IAM::Role
       Properties:
-        RoleName: sls_Dataplattform_IngestRole
+        RoleName: sls_${self:custom.project}_IngestRole
         AssumeRolePolicyDocument:
           Version: '2012-10-17'
           Statement:
@@ -124,7 +124,7 @@ resources:
                   - lambda.amazonaws.com
               Action: sts:AssumeRole
         Policies:
-          - PolicyName: sls_Dataplattform_dynamodbPutItemPolicy
+          - PolicyName: sls_${self:custom.project}_dynamodbPutItemPolicy
             PolicyDocument:
               Version: '2012-10-17'
               Statement:

@@ -16,7 +16,7 @@ def fetch_from_api(base_url, params):
     :param params: All the params keys and values needed excluding token.
     :return: the response fetched.
     """
-    token = os.getenv("DATAPLATTFORM_AURORA_SLACK_TOKEN")
+    token = os.getenv("DATAPLATTFORM_OAUTH_SLACK_TOKEN")
     params["token"] = token
 
     query = urllib.parse.urlencode(params)

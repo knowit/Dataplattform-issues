@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # This list is sorted in the way we need to deploy the services.
-export services=("dynamodb/" "common_layers/" "ingest/" "fetch/" "events_slack_app/" "poller/")
+export services=("dynamodb/" "common_layers/" "ingest/" "fetch/" "events_slack_app/" "poller/" "structured_mysql")
 
 if [ "$1" != "" ]; then
     if [ "$2" = "remove" ]; then
