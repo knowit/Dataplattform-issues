@@ -4,4 +4,8 @@ python:
 install:
   - cd services && sh install_reqs.sh
 script:
+  - python -m pytest --ignore=integration_tests
+  - npm install -g serverless
+  - ./deploy_every_service.sh test
+  - cd integration_tests
   - python -m pytest

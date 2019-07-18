@@ -112,4 +112,4 @@ venv.bak/
 **/.serverless/
 **/.vscode/ 
 **/node_modules/
-
+**/package-lock.json
