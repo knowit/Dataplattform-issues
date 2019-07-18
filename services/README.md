@@ -24,5 +24,6 @@ før > etter:
 * common_layers > ingest
 * common_layers > fetch
 * ingest > events_slack_app
+* events_slack_app > structured_mysql
 
 Kort sagt må ```dynamodb``` og ```common_layers``` deployeres først

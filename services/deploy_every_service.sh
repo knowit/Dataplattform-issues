@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # This list is sorted in the way we need to deploy the services.
-export services=("dynamodb/" "common_layers/" "ingest/" "fetch/" "events_slack_app/" "poller/")
+export services=("dynamodb/" "common_layers/" "ingest/" "fetch/" "events_slack_app/" "poller/" "structured_mysql")
 
 
 # Check if you have a package.json file then you might need to update the npm packages.
