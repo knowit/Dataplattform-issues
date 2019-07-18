@@ -31,7 +31,7 @@ if [ "$1" != "" ]; then
             echo 'Deploying' $service
             echo ''
             check_npm_modules
-            sls deploy --stage $1
+            sls deploy --stage $1 --conceal
             exit_status=$?
             cd ..
             if [ $exit_status -ne 0 ]; then

@@ -6,6 +6,8 @@ custom:
   ingest_lambda: ${self:custom.project}-ingest
   slack_ingest_lambda: ${self:custom.project}-slack_ingest
   github_ingest_lambda: ${self:custom.project}-github_ingest
+  output:
+    file: ../integration_tests/ingest.serverless_outputs.json # toml, yaml, yml, and json format is available
 
 provider:
   name: aws
@@ -150,3 +152,6 @@ resources:
             - ".execute-api.${self:provider.region}.amazonaws.com/${self:custom.stage}/dataplattform_ingest/"
       Export:
         Name: ${self:custom.project}-ingest-url
+
+plugins:
+  - serverless-stack-output

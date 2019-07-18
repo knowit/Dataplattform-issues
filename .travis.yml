@@ -4,6 +4,7 @@ python:
 install:
   - cd services && sh install_reqs.sh
 script:
+  - set -e # This is in order to stop the remaining tests after one has failed.
   - python -m pytest --ignore=integration_tests
   - npm install -g serverless
   - ./deploy_every_service.sh test
