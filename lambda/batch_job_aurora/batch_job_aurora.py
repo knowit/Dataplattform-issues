@@ -128,7 +128,7 @@ def fetch_data_url(url):
     req = urllib.request.Request(url, headers={"x-api-key": fetch_key})
     response = urllib.request.urlopen(req)
     response_dict = json.loads(response.read().decode())
-    signed_url = response_dict["url"]
+    signed_url = response_dict["all_docs_url"]
 
     req2 = urllib.request.Request(signed_url)
     response2 = urllib.request.urlopen(req2)
