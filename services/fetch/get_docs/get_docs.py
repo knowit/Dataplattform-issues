@@ -51,8 +51,8 @@ def format_response(docs, url, n=25):
     # Invert the list and slice the most n recent ones.
     most_recent_docs = docs[:-(n + 1):-1]
     return json.dumps({
-        "url": url,
-        "docs": most_recent_docs
+        "all_docs_url": url,
+        "most_recent_25_docs": most_recent_docs
     })
 
 

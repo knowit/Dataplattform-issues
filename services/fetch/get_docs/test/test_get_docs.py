@@ -28,8 +28,8 @@ docs = [
 def test_format_response_n_0():
     body = get_docs.format_response(docs, "example.org", n=0)
     body_correct = json.dumps({
-        "url": "example.org",
-        "docs": []
+        "all_docs_url": "example.org",
+        "most_recent_25_docs": []
     })
     assert body == body_correct
 
@@ -37,8 +37,8 @@ def test_format_response_n_0():
 def test_format_response_n_1():
     body = get_docs.format_response(docs, "example.org", n=1)
     body_correct = json.dumps({
-        "url": "example.org",
-        "docs": [
+        "all_docs_url": "example.org",
+        "most_recent_25_docs": [
             {
                 "timestamp": 66666,
                 "ost": "oooo",
@@ -51,8 +51,8 @@ def test_format_response_n_1():
 def test_format_response_n_4():
     body = get_docs.format_response(docs, "example.org", n=4)
     body_correct = json.dumps({
-        "url": "example.org",
-        "docs": [
+        "all_docs_url": "example.org",
+        "most_recent_25_docs": [
             {
                 "timestamp": 66666,
                 "ost": "oooo",
@@ -81,8 +81,8 @@ def test_format_response_n_4():
 def test_format_response_n_high():
     body = get_docs.format_response(docs, "example.org", n=100)
     body_correct = json.dumps({
-        "url": "example.org",
-        "docs": [
+        "all_docs_url": "example.org",
+        "most_recent_25_docs": [
             {
                 "timestamp": 66666,
                 "ost": "oooo",
