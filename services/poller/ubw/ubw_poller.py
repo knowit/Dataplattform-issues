@@ -219,10 +219,6 @@ def should_upload_ingest(doc, last_inserted_doc):
     to.
     :return: either True if this doc should be uploaded or False if it should be skipped.
     """
-    # You should always upload if there is no previous inserted doc.
-    if last_inserted_doc is None:
-        return True
-
     # The last document doesn't have either or these and should be skipped.
     if "tab" not in doc or "reg_period" not in doc:
         return False
@@ -230,5 +226,9 @@ def should_upload_ingest(doc, last_inserted_doc):
     # Only the "B" documents are completed, the rest should be ignored.
     if doc["tab"] != "B":
         return False
+
+    # You should always upload if there is no previous inserted doc.
+    if last_inserted_doc is None:
+        return True
 
     return int(doc["reg_period"]) > int(last_inserted_doc)
