@@ -1,0 +1,124 @@
+service: dataplattform-structured-mysql
+
+custom:
+  stage: ${opt:stage, self:provider.stage}
+  project: Dataplattform-${self:custom.stage}
+  batch_job_lambda: ${self:custom.project}-batch_job_mysql
+  database_name: Dataplattform
+  pythonRequirements:
+    useDownloadCache: true
+    useStaticCache: true
+
+provider:
+  name: aws
+  stage: dev
+  region: eu-central-1
+  runtime: python3.7
+  memorySize: 1024
+  timeout: 30
+  tags:
+    Project: ${self:custom.project}
+
+
+package:
+  individually: true
+  exclude:
+    - "./**"
+
+functions:
+  batch_job_mysql:
+    handler: batch_job_aurora.handler
+    module: batch_job_aurora
+    name: ${self:custom.batch_job_lambda}
+    description: MySQL insert batch job
+    role: batchJobRole
+    package:
+      include:
+        - 'batch_job_aurora/*.py'
+    environment:
+      DATAPLATTFORM_AURORA_HOST: todo #TODO
+      DATAPLATTFORM_AURORA_PORT: 3306
+      DATAPLATTFORM_AURORA_DB_NAME: ${self:custom.database_name}
+      DATAPLATTFORM_AURORA_USER: dataplattform
+      DATAPLATTFORM_AURORA_PASSWORD: todo #TODO
+      DATAPLATTFORM_FETCH_APIKEY: ${ssm:dataplattform_mysql_fetch_apikey}
+      DATAPLATTFORM_FETCH_URL:
+        'Fn::ImportValue': ${self:custom.project}-get-docs-url
+      DATAPLATTFORM_OAUTH_SLACK_TOKEN: ${ssm:dataplattform_slack_event_oauth}
+      DATAPLATTFORM_EVENT_CODE_TABLE:
+        'Fn::ImportValue': ${self:custom.project}-dynamodb-eventtable-name
+    events:
+      - schedule: rate(1 hour)
+
+resources:
+  Resources:
+    batchJobRole:
+      Type: AWS::IAM::Role
+      Properties:
+        RoleName: ${self:custom.project}-BatchJobRole
+        AssumeRolePolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Principal:
+                Service:
+                  - lambda.amazonaws.com
+              Action: sts:AssumeRole
+        ManagedPolicyArns:
+          - 'arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
+        Policies:
+          - PolicyName: ${self:custom.project}-
+            PolicyDocument:
+              Version: '2012-10-17'
+              Statement:
+                - Effect: Allow
+                  Action:
+                    - dynamodb:GetItem
+                    - dynamodb:Scan
+                    - dynamodb:Query
+                  Resource:
+                    - 'Fn::ImportValue': ${self:custom.project}-dynamodb-eventtable-arn
+    auroraCluster:
+      # TODO export cloudwatch logs?
+      Type: AWS::RDS::DBCluster
+      Properties:
+        BackupRetentionPeriod: 2 # TODO increase for prod?
+        DatabaseName: ${self:custom.database_name}
+        DBClusterIdentifier: ${self:custom.project}
+        DBClusterParameterGroupName: default.aurora-mysql5.7
+        DeletionProtection: false # TODO true for prod
+        EnableIAMDatabaseAuthentication: false
+        Engine: aurora-mysql
+        EngineMode: provisioned
+        EngineVersion: '5.7.12'
+        MasterUsername: admin
+        MasterUserPassword: ${ssm:dataplattform_aurora_${self:custom.stage}_password}
+        Port: 3306
+        StorageEncrypted: true
+        Tags:
+          - Key: Project
+            Value: ${self:custom.project}
+        DBSubnetGroupName: 'default-vpc-02f9ab9c69358eb52'
+        VpcSecurityGroupIds:
+          - 'sg-0c9b4ed623306c437' # DATAPLATTFORM-ALLOW-KNOWIT
+          - 'sg-0583a4e1657cfded3' # DATAPLATTFORM-QUICKSIGHT-IRELAND
+  Outputs:
+    auroraClusterRWEndpoint:
+      Description: "Read/write endpoint for aurora cluster"
+      Value:
+        Fn::GetAtt:
+          - auroraCluster
+          - Endpoint.Address
+      Export:
+        Name: ${self:custom.project}-aurora-endpoint-rw
+    auroraClusterROEndpoint:
+      Description: "Read only endpoint for aurora cluster"
+      Value:
+        Fn::GetAtt:
+          - auroraCluster
+          - ReadEndpoint.Address
+      Export:
+        Name: ${self:custom.project}-aurora-endpoint-ro
+
+plugins:
+  - serverless-python-requirements

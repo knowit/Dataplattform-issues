@@ -6,6 +6,8 @@ custom:
   ingest_lambda: ${self:custom.project}-ingest
   slack_ingest_lambda: ${self:custom.project}-slack_ingest
   github_ingest_lambda: ${self:custom.project}-github_ingest
+  output:
+    file: ../integration_tests/ingest.serverless_outputs.json
 
 provider:
   name: aws
@@ -16,7 +18,7 @@ provider:
   timeout: 5
   role: arn:aws:iam::275823250475:role/dataplattform_basic_lambda #TODO set up roles using serverless
   apiKeys:
-    - ${self:custom.project}-ingest-key
+    - name: ${self:custom.project}-ingest-key
     - name: ${self:custom.project}-slack_ingest-apikey
       value: ${ssm:dataplattform_slack_ingest_apikey}
     - name: ${self:custom.project}-github_ingest-apikey
@@ -25,6 +27,8 @@ provider:
       value: ${ssm:dataplattform_slack_event_app_ingest_apikey}
     - name: ${self:custom.project}-polling_ingest_apikey
       value: ${ssm:dataplattform_polling_ingest_apikey}
+    - name: ${self:custom.project}-travis_ingest_apikey
+      value: ${ssm:dataplattform_travis_ingest_apikey}
   usagePlan:
     throttle: #TODO decide on some values
       burstLimit: 200
@@ -114,7 +118,7 @@ resources:
     ingestRole:
       Type: AWS::IAM::Role
       Properties:
-        RoleName: sls_Dataplattform_IngestRole
+        RoleName: sls_${self:custom.project}_IngestRole
         AssumeRolePolicyDocument:
           Version: '2012-10-17'
           Statement:
@@ -124,7 +128,7 @@ resources:
                   - lambda.amazonaws.com
               Action: sts:AssumeRole
         Policies:
-          - PolicyName: sls_Dataplattform_dynamodbPutItemPolicy
+          - PolicyName: sls_${self:custom.project}_dynamodbPutItemPolicy
             PolicyDocument:
               Version: '2012-10-17'
               Statement:
@@ -150,3 +154,11 @@ resources:
             - ".execute-api.${self:provider.region}.amazonaws.com/${self:custom.stage}/dataplattform_ingest/"
       Export:
         Name: ${self:custom.project}-ingest-url
+    TravisIngestKey:
+      Description: "Ingest key for automated integration tests"
+      Value: ${ssm:dataplattform_travis_ingest_apikey}
+      Export:
+        Name: ${self:custom.project}-travis-ingest-apikey
+
+plugins:
+  - serverless-stack-output

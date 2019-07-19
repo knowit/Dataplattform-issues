@@ -85,3 +85,14 @@ resources:
                   Action:
                     - "s3:*" #TODO find out which ones we actually need
                   Resource: "*"
+  Outputs:
+    GetDocsURL:
+      Description: "Get_docs URL"
+      Value:
+        Fn::Join:
+          - ""
+          - - "https://"
+            - Ref: ApiGatewayRestApi
+            - ".execute-api.${self:provider.region}.amazonaws.com/${self:custom.stage}/get_docs/"
+      Export:
+        Name: ${self:custom.project}-get-docs-url

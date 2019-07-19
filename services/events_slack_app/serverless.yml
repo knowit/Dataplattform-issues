@@ -1,4 +1,4 @@
-service: dataplattform-fetch
+service: dataplattform-events-slack-app
 
 custom:
   stage: ${opt:stage, self:provider.stage}
@@ -107,6 +107,8 @@ resources:
                 Service:
                   - lambda.amazonaws.com
               Action: sts:AssumeRole
+        ManagedPolicyArns:
+          - 'arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole'
         Policies:
           - PolicyName: ${self:custom.project}-readWriteEventDynamoPolicy
             PolicyDocument:
@@ -119,15 +121,9 @@ resources:
                     - "dynamodb:Scan"
                     - "dynamodb:Query"
                   Resource:
-                    - Fn::GetAtt:
+                    Fn::GetAtt:
                       - EventTable
                       - Arn
-                - Effect: Allow
-                  Action:
-                    - logs:CreateLogGroup
-                    - logs:CreateLogStream
-                    - logs:PutLogEvents
-                  Resource: "*"
     EventTable:
       Type: AWS::DynamoDB::Table
       Properties:
@@ -141,6 +137,20 @@ resources:
         ProvisionedThroughput:
           ReadCapacityUnits: 5
           WriteCapacityUnits: 5
+  Outputs:
+    EventTableArn:
+      Description: "event code table arn"
+      Value:
+        Fn::GetAtt:
+          - EventTable
+          - Arn
+      Export:
+        Name: ${self:custom.project}-dynamodb-eventtable-arn
+    EventTableName:
+      Description: "Event table name"
+      Value: ${self:custom.eventTable}
+      Export:
+        Name: ${self:custom.project}-dynamodb-eventtable-name
 
 plugins:
   - serverless-python-requirements

@@ -1,5 +1,5 @@
 # This requirements file is like a master-requirements file which installs all the dependencies needed for all the lambdas and the dependencies needed for testing.
-#-r batch_job_aurora/requirements.txt
+-r structured_mysql/batch_job_aurora/requirements.txt
 -r events_slack_app/slack_response/requirements.txt
 -r poller/ubw/requirements.txt
 

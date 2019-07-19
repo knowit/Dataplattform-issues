@@ -175,3 +175,19 @@ def test_should_upload_ingest_fail4():
     res = ubw_poller.should_upload_ingest(new_doc, last_inserted_doc)
 
     assert res is False
+
+
+def test_should_upload_ingest_fail5():
+    # tab == A should not upload, even if there is no last_inserted_doc
+    new_doc = {
+        "reg_period": "201928",
+        "used_hrs": "198",
+        "_recno": "0",
+        "_section": "D",
+        "tab": "A"
+    }
+    last_inserted_doc = None
+
+    res = ubw_poller.should_upload_ingest(new_doc, last_inserted_doc)
+
+    assert res is False

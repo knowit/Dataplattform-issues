@@ -125,7 +125,7 @@ def fetch_data_url(url):
     :param url: URL for get_docs API
     :return: list of docs fetched from get_docs API.
     """
-    fetch_key = os.getenv("DATAPLATTFORM_AURORA_FETCH_KEY")
+    fetch_key = os.getenv("DATAPLATTFORM_FETCH_APIKEY")
     req = urllib.request.Request(url, headers={"x-api-key": fetch_key})
     response = urllib.request.urlopen(req)
     response_dict = json.loads(response.read().decode())
@@ -150,7 +150,7 @@ def format_url(base_url, type, timestamp_from, timestamp_to, just_url=True):
 
 
 def main(types, timestamp_from, timestamp_to):
-    base_url = os.getenv("DATAPLATTFORM_AURORA_FETCH_API_URL")
+    base_url = os.getenv("DATAPLATTFORM_FETCH_URL")
 
     connection = pymysql.connect(
         host=os.getenv("DATAPLATTFORM_AURORA_HOST"),

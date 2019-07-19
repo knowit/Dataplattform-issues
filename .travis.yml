@@ -1,7 +1,21 @@
 language: python
 python:
   - '3.7'
-install:
-  - cd services && sh install_reqs.sh
-script:
-  - python -m pytest
+
+jobs:
+  include:
+    - stage: unittest
+      script:
+        - cd services && sh install_reqs.sh
+        - set -e # This is in order to stop the remaining tests after one has failed.
+        - python -m pytest --ignore=integration_tests
+    - stage: integrationtest
+      if: branch = master # Run only on master and PRs into master
+      script:
+        - cd services
+        - set -e
+        - npm install -g serverless
+        - pip install integration_tests/util/
+        - ./deploy_every_service.sh test
+        - cd integration_tests
+        - python -m pytest
