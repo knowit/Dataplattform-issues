@@ -4,6 +4,9 @@ custom:
   stage: ${opt:stage, self:provider.stage}
   project: Dataplattform-${self:custom.stage}
   get_docs_lambda: ${self:custom.project}-get_docs
+  fetch_apikey_value: ${ssm:dataplattform_${self:custom.stage}_fetch_apikey}
+  output:
+    file: ../integration_tests/fetch.serverless_outputs.json
 
 provider:
   name: aws
@@ -13,7 +16,8 @@ provider:
   memorySize: 1024
   timeout: 15
   apiKeys:
-    - ${self:custom.project}-fetch-key
+    - name: ${self:custom.project}-fetch_apikey
+      value: ${self:custom.fetch_apikey_value}
   usagePlan:
     throttle: #TODO decide on some values
       burstLimit: 200
@@ -96,3 +100,10 @@ resources:
             - ".execute-api.${self:provider.region}.amazonaws.com/${self:custom.stage}/get_docs/"
       Export:
         Name: ${self:custom.project}-get-docs-url
+    TravisFetchApiKey:
+      Description: "Fetch key for automated integration tests"
+      Value: ${self:custom.fetch_apikey_value}
+      Export:
+        Name: ${self:custom.project}-fetch-apikey
+plugins:
+  - serverless-stack-output
