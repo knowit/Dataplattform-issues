@@ -14,6 +14,8 @@ provider:
   timeout: 15
   apiKeys:
     - ${self:custom.project}-fetch-key
+    - name: ${self:custom.project}-batch_job-apikey
+      value: ${ssm:dataplattform_mysql_fetch_apikey}
   usagePlan:
     throttle: #TODO decide on some values
       burstLimit: 200

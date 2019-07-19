@@ -118,7 +118,7 @@ resources:
     ingestRole:
       Type: AWS::IAM::Role
       Properties:
-        RoleName: sls_${self:custom.project}_IngestRole
+        RoleName: ${self:custom.project}-IngestRole
         AssumeRolePolicyDocument:
           Version: '2012-10-17'
           Statement:
@@ -127,8 +127,10 @@ resources:
                 Service:
                   - lambda.amazonaws.com
               Action: sts:AssumeRole
+        ManagedPolicyArns:
+          - 'arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole'
         Policies:
-          - PolicyName: sls_${self:custom.project}_dynamodbPutItemPolicy
+          - PolicyName: ${self:custom.project}-dynamodb-rawtable-writeonly
             PolicyDocument:
               Version: '2012-10-17'
               Statement:
@@ -137,12 +139,6 @@ resources:
                     - dynamodb:PutItem
                   Resource:
                     - 'Fn::ImportValue': ${self:custom.project}-dynamodb-rawtable-arn
-                - Effect: Allow
-                  Action:
-                    - logs:CreateLogGroup
-                    - logs:CreateLogStream
-                    - logs:PutLogEvents
-                  Resource: "*"
   Outputs:
     IngestURL:
       Description: "Ingest URL"
