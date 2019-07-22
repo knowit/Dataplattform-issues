@@ -5,9 +5,14 @@ custom:
   project: Dataplattform-${self:custom.stage}
   batch_job_lambda: ${self:custom.project}-batch_job_mysql
   database_name: Dataplattform
+  db_admin_password: ${ssm:dataplattform_aurora_${self:custom.stage}_password}
   pythonRequirements:
     useDownloadCache: true
     useStaticCache: true
+  db:
+    prod: db.t2.medium
+    dev: db.t2.small
+    test: db.t2.small
 
 provider:
   name: aws
@@ -35,12 +40,16 @@ functions:
     package:
       include:
         - 'batch_job_aurora/*.py'
+        - 'batch_job_aurora/data_types/*'
     environment:
-      DATAPLATTFORM_AURORA_HOST: todo #TODO
+      DATAPLATTFORM_AURORA_HOST:
+        Fn::GetAtt:
+          - auroraCluster
+          - Endpoint.Address
       DATAPLATTFORM_AURORA_PORT: 3306
       DATAPLATTFORM_AURORA_DB_NAME: ${self:custom.database_name}
-      DATAPLATTFORM_AURORA_USER: dataplattform
-      DATAPLATTFORM_AURORA_PASSWORD: todo #TODO
+      DATAPLATTFORM_AURORA_USER: admin # TODO Hmmmmm
+      DATAPLATTFORM_AURORA_PASSWORD: ${self:custom.db_admin_password}
       DATAPLATTFORM_FETCH_APIKEY: ${ssm:dataplattform_mysql_fetch_apikey}
       DATAPLATTFORM_FETCH_URL:
         'Fn::ImportValue': ${self:custom.project}-get-docs-url
@@ -49,6 +58,12 @@ functions:
         'Fn::ImportValue': ${self:custom.project}-dynamodb-eventtable-name
     events:
       - schedule: rate(1 hour)
+    vpc:
+      securityGroupIds:
+        - sg-2ca58644 # ON-LAN
+      subnetIds:
+        - subnet-bd8400d5 # ON-LAN1
+        - subnet-9a4981e0 # ON-LAN2
 
 resources:
   Resources:
@@ -67,7 +82,7 @@ resources:
         ManagedPolicyArns:
           - 'arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
         Policies:
-          - PolicyName: ${self:custom.project}-
+          - PolicyName: ${self:custom.project}-eventtable-readonly
             PolicyDocument:
               Version: '2012-10-17'
               Statement:
@@ -92,7 +107,7 @@ resources:
         EngineMode: provisioned
         EngineVersion: '5.7.12'
         MasterUsername: admin
-        MasterUserPassword: ${ssm:dataplattform_aurora_${self:custom.stage}_password}
+        MasterUserPassword: ${self:custom.db_admin_password}
         Port: 3306
         StorageEncrypted: true
         Tags:
@@ -102,6 +117,21 @@ resources:
         VpcSecurityGroupIds:
           - 'sg-0c9b4ed623306c437' # DATAPLATTFORM-ALLOW-KNOWIT
           - 'sg-0583a4e1657cfded3' # DATAPLATTFORM-QUICKSIGHT-IRELAND
+    mysqlDBInstance:
+      Type: AWS::RDS::DBInstance
+      Properties:
+        AllowMajorVersionUpgrade: false
+        AutoMinorVersionUpgrade: true
+        Engine: aurora-mysql
+        PubliclyAccessible: true
+        DBClusterIdentifier: !Ref "auroraCluster"
+        DBInstanceClass: ${self:custom.db.${self:custom.stage}}
+        DBInstanceIdentifier: ${self:custom.project}-master
+        DBParameterGroupName: default.aurora-mysql5.7
+        DBSubnetGroupName: default-vpc-02f9ab9c69358eb52
+        Tags:
+          - Key: Project
+            Value: ${self:custom.project}
   Outputs:
     auroraClusterRWEndpoint:
       Description: "Read/write endpoint for aurora cluster"
