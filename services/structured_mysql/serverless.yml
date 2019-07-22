@@ -9,6 +9,10 @@ custom:
   pythonRequirements:
     useDownloadCache: true
     useStaticCache: true
+  db:
+    prod: db.t2.medium
+    dev: db.t2.small
+    test: db.t2.small
 
 provider:
   name: aws
@@ -54,6 +58,12 @@ functions:
         'Fn::ImportValue': ${self:custom.project}-dynamodb-eventtable-name
     events:
       - schedule: rate(1 hour)
+    vpc:
+      securityGroupIds:
+        - sg-2ca58644 # ON-LAN
+      subnetIds:
+        - subnet-bd8400d5 # ON-LAN1
+        - subnet-9a4981e0 # ON-LAN2
 
 resources:
   Resources:
@@ -115,7 +125,7 @@ resources:
         Engine: aurora-mysql
         PubliclyAccessible: true
         DBClusterIdentifier: !Ref "auroraCluster"
-        DBInstanceClass: db.t2.medium # TODO decrease if not prod
+        DBInstanceClass: ${self:custom.db.${self:custom.stage}}
         DBInstanceIdentifier: ${self:custom.project}-master
         DBParameterGroupName: default.aurora-mysql5.7
         DBSubnetGroupName: default-vpc-02f9ab9c69358eb52
