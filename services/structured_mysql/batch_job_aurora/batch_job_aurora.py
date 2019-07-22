@@ -38,10 +38,11 @@ def handler(event, context):
     if "timestamp_to" in event:
         timestamp_to = event["timestamp_to"]
 
-    counter, n_dupes = main(types, timestamp_from, timestamp_to)
+    counter, n_dupes, n_errors = main(types, timestamp_from, timestamp_to)
     return {
         'statusCode': 200,
-        'body': f"{counter} records inserted into Aurora. {n_dupes} duplicates skipped."
+        'body': f"{counter} records inserted into Aurora. {n_dupes} duplicates skipped. "
+        f"{n_errors} errors."
     }
 
 
@@ -61,6 +62,7 @@ def get_relevant_attrs(docs, type, sql_connection):
     # To make sure that we are able to insert records into the SQL table we run this now.
     check_table_exists(sql_connection, type, data_type_object)
 
+    n_errors = 0
     for doc in docs:
         try:
             if data_type_object.accept_document(doc):
@@ -68,8 +70,8 @@ def get_relevant_attrs(docs, type, sql_connection):
                 if data_type_object.accept_row(column_values):
                     output.append(column_values)
         except:
-            pass
-    return output
+            n_errors += 1
+    return output, n_errors
 
 
 def check_table_exists(sql_connection, table_name, data_type_object):
@@ -172,22 +174,22 @@ def main(types, timestamp_from, timestamp_to):
         cursorclass=pymysql.cursors.DictCursor)
     counter = 0
     duplicates = 0
+    errors = 0
 
     for type in types:
-        try:
-            url = format_url(base_url, type, timestamp_from, timestamp_to)
-            docs = fetch_data_url(url)
-            sql_format = get_relevant_attrs(docs, type, connection)
-            n_records, n_duplicates = insert_data_into_db(connection, sql_format, type)
-            counter += n_records
-            duplicates += n_duplicates
-        except:
-            pass
+        url = format_url(base_url, type, timestamp_from, timestamp_to)
+        docs = fetch_data_url(url)
+        sql_format, n_errors = get_relevant_attrs(docs, type, connection)
+        n_records, n_duplicates = insert_data_into_db(connection, sql_format, type)
+        counter += n_records
+        duplicates += n_duplicates
+        errors += n_errors
     connection.close()
-    return counter, duplicates
+    return counter, duplicates, errors
 
 
 if __name__ == '__main__':
-    number_of_recs_inserted, n_dupes = main(DEFAULT_TYPES, DEFAULT_TIMESTAMP_FROM,
-                                            DEFAULT_TIMESTAMP_TO)
-    print(f"Inserted {number_of_recs_inserted} records and skipped {n_dupes} duplicates.")
+    number_of_recs_inserted, n_dupes, errors = main(DEFAULT_TYPES, DEFAULT_TIMESTAMP_FROM,
+                                                    DEFAULT_TIMESTAMP_TO)
+    print(f"Inserted {number_of_recs_inserted} records and skipped {n_dupes} duplicates. "
+          f"{errors} errors.")
