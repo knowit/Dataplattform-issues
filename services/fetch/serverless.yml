@@ -18,6 +18,8 @@ provider:
   apiKeys:
     - name: ${self:custom.project}-fetch_apikey
       value: ${self:custom.fetch_apikey_value}
+    - name: ${self:custom.project}-batch_job-apikey
+      value: ${ssm:dataplattform_mysql_fetch_apikey}
   usagePlan:
     throttle: #TODO decide on some values
       burstLimit: 200
