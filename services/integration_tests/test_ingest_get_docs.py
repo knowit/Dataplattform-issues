@@ -37,10 +37,8 @@ def test_ingest_doc_and_get_docs():
     # Now try to fetch the same record using get_docs.
     fetch_url = FETCH_CONFIG["GetDocsURL"] + random_type
     fetch_apikey = FETCH_CONFIG["TravisFetchApiKey"]
-    print(fetch_url)
-    print(fetch_apikey)
+
     response_code, response_body = util.get_from_api(fetch_url, apikey=fetch_apikey)
-    print(response_body)
     assert response_code == 200
     assert "all_docs_url" in response_body
     assert "most_recent_25_docs" in response_body
