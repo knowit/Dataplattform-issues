@@ -1,4 +1,3 @@
-import json
 from datetime import datetime
 import integration_tests_util as util
 
@@ -22,8 +21,7 @@ def test_can_post_to_ingest():
     apikey = INGEST_CONFIG["TravisIngestKey"]
     response_code, response_body = util.post_to_api("{}", url, apikey=apikey)
     assert response_code == 200
-    body = json.loads(response_body)
-    assert "timestamp" in body
-    timestamp = int(body["timestamp"])
+    assert "timestamp" in response_body
+    timestamp = int(response_body["timestamp"])
     timestamp_now = int(datetime.now().timestamp())
     assert timestamp <= timestamp_now
