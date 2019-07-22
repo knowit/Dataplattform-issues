@@ -10,7 +10,7 @@ def test_load_config():
     assert FETCH_CONFIG["GetDocsURL"].endswith("/")
 
 
-def test_can_fetch_with_api():
+def test_can_fetch_with_apikey():
     fetch_url = FETCH_CONFIG["GetDocsURL"] + "SomeTestingType"
     fetch_apikey = FETCH_CONFIG["TravisFetchApiKey"]
 
@@ -31,14 +31,14 @@ def test_can_fetch_with_api():
     assert len(response_body) >= len(recent_list)
 
 
-def test_cannot_fetch_without_api():
+def test_cannot_fetch_without_apikey():
     fetch_url = FETCH_CONFIG["GetDocsURL"] + "SomeTestingType"
 
     response_code, response_body = util.get_from_api(fetch_url)
     assert response_code == 500
 
 
-def test_cannot_fetch_with_wrong_api():
+def test_cannot_fetch_with_wrong_apikey():
     fetch_url = FETCH_CONFIG["GetDocsURL"] + "SomeTestingType"
 
     response_code, response_body = util.get_from_api(fetch_url,
