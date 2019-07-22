@@ -11,7 +11,14 @@ inserts that information into an aurora db.
 """
 
 # These types will be used if no other types are provided.
-DEFAULT_TYPES = ["GithubType", "EventRatingType", "SlackType"]
+DEFAULT_TYPES = [
+    "EventRatingType",
+    "EventType",
+    "GithubType",
+    "SlackType",
+    "SlackReactionType",
+    "UBWType",
+]
 
 # Assume running hourly by default. Request the last 1h10m of data.
 DEFAULT_TIMESTAMP_TO = timestamp = int(dt.now().timestamp())
@@ -55,10 +62,13 @@ def get_relevant_attrs(docs, type, sql_connection):
     check_table_exists(sql_connection, type, data_type_object)
 
     for doc in docs:
-        if data_type_object.accept_document(doc):
-            column_values = data_type_object.get_column_values(doc)
-            if data_type_object.accept_row(column_values):
-                output.append(column_values)
+        try:
+            if data_type_object.accept_document(doc):
+                column_values = data_type_object.get_column_values(doc)
+                if data_type_object.accept_row(column_values):
+                    output.append(column_values)
+        except:
+            pass
     return output
 
 
@@ -164,12 +174,15 @@ def main(types, timestamp_from, timestamp_to):
     duplicates = 0
 
     for type in types:
-        url = format_url(base_url, type, timestamp_from, timestamp_to)
-        docs = fetch_data_url(url)
-        sql_format = get_relevant_attrs(docs, type, connection)
-        n_records, n_duplicates = insert_data_into_db(connection, sql_format, type)
-        counter += n_records
-        duplicates += n_duplicates
+        try:
+            url = format_url(base_url, type, timestamp_from, timestamp_to)
+            docs = fetch_data_url(url)
+            sql_format = get_relevant_attrs(docs, type, connection)
+            n_records, n_duplicates = insert_data_into_db(connection, sql_format, type)
+            counter += n_records
+            duplicates += n_duplicates
+        except:
+            pass
     connection.close()
     return counter, duplicates
 
