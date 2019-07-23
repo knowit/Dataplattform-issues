@@ -63,6 +63,8 @@ resources:
                 Service:
                   - lambda.amazonaws.com
               Action: sts:AssumeRole
+        ManagedPolicyArns:
+          - 'arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole'
         Policies:
           - PolicyName: ${self:custom.project}-dynamodbReadOnlyPolicy
             PolicyDocument:
@@ -77,12 +79,6 @@ resources:
                     - dynamodb:Query
                   Resource:
                     - 'Fn::ImportValue': ${self:custom.project}-dynamodb-rawtable-arn
-                - Effect: Allow
-                  Action:
-                    - logs:CreateLogGroup
-                    - logs:CreateLogStream
-                    - logs:PutLogEvents
-                  Resource: "*"
                 - Effect: Allow
                   Action:
                     - "s3:*" #TODO find out which ones we actually need
