@@ -93,7 +93,7 @@ def get_medium_data_dict(html):
     ends_with = """)\n// ]]>"""
 
     for script in scripts:
-        if script.startswith(starts_with) and script.endswith(ends_with):
-            script = script[len(starts_with):-len(ends_with):]
+        if script.text.startswith(starts_with) and script.text.endswith(ends_with):
+            script = script.text[len(starts_with):-len(ends_with):]
             return json.loads(script)
     return None
