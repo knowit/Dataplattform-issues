@@ -2,7 +2,7 @@ import urllib.request
 import urllib.parse
 import json
 from bs4 import BeautifulSoup
-import poller_util
+from poller_util import PollerUtil
 
 KNOWITLABS_TYPE = "KnowitlabsType"
 
@@ -14,7 +14,7 @@ def poll():
     :return: True if everything was successful.
     """
     # Should actually be called most_recent here in blog_poller.
-    last_inserted_doc = poller_util.fetch_last_inserted_doc(KNOWITLABS_TYPE)
+    last_inserted_doc = PollerUtil.fetch_last_inserted_doc(KNOWITLABS_TYPE)
 
     html = get_html_from_blog()
     medium_data = get_medium_data_dict(html)
@@ -23,11 +23,11 @@ def poll():
     most_recent = docs[0]["id"]
     for doc in docs:
         if should_upload_ingest(doc, last_inserted_doc):
-            poller_util.post_to_ingest_api(doc, KNOWITLABS_TYPE)
+            PollerUtil.post_to_ingest_api(doc, KNOWITLABS_TYPE)
         else:
             break
     if last_inserted_doc != most_recent:
-        poller_util.upload_last_inserted_doc(most_recent, KNOWITLABS_TYPE)
+        PollerUtil.upload_last_inserted_doc(most_recent, KNOWITLABS_TYPE)
     return True
 
 

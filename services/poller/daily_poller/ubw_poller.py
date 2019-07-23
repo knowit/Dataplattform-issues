@@ -2,11 +2,11 @@ import os
 import xmltodict
 import urllib.request
 import urllib.parse
-import poller_util
+from poller_util import PollerUtil
 
 
 def poll():
-    last_inserted_doc = poller_util.fetch_last_inserted_doc("UBWType")
+    last_inserted_doc = PollerUtil.fetch_last_inserted_doc("UBWType")
 
     ubw_datas = fetch_ubw_data()
     for ubw_data in ubw_datas:
@@ -15,7 +15,7 @@ def poll():
             if last_doc_new is not None:
                 last_inserted_doc = last_doc_new
 
-    poller_util.upload_last_inserted_doc(last_inserted_doc, "UBWType")
+    PollerUtil.upload_last_inserted_doc(last_inserted_doc, "UBWType")
 
     return True
 
@@ -149,7 +149,7 @@ def insert_new_ubw_data(doc):
     :return: This method attempts to upload the ubw document into the ingest API and if that was
     successful it returns the reg_period of this document. (aka the last_inserted_doc)
     """
-    if poller_util.post_to_ingest_api(doc, "UBWType") == 200:
+    if PollerUtil.post_to_ingest_api(doc, "UBWType") == 200:
         # This method is always updating the last_inserted_doc global after uploading new data.
         return doc["reg_period"]
     return None
