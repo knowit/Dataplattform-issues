@@ -152,7 +152,7 @@ def fetch_ubw_data():
 
 def insert_new_ubw_data(doc):
     """
-    :param doc: A daily_poller document.
+    :param doc: A ubw document.
     :return: This method attempts to upload the ubw document into the ingest API and if that was
     successful it returns the reg_period of this document. (aka the last_inserted_doc)
     """

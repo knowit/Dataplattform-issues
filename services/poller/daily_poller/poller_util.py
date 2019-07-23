@@ -26,7 +26,7 @@ class PollerUtil:
         if PollerUtil.__table is not None and PollerUtil.__client is not None:
             raise Exception("This class should only be created once.")
         else:
-            client = boto3.resource("dynamodb")
+            client = boto3.resource("dynamodb", region_name="eu-central-1")
             table = client.Table(os.getenv("DATAPLATTFORM_POLLING_STATUS_TABLENAME"))
             PollerUtil.__client = client
             PollerUtil.__table = table

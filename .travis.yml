@@ -15,8 +15,7 @@ jobs:
         - cd services
         - set -e
         - npm install -g serverless
-        - pip install poller/daily_poller/
-        - pip install integration_tests/util/
         - ./deploy_every_service.sh test
         - cd integration_tests
+        - ./install_integration_reqs.sh
         - python -m pytest
