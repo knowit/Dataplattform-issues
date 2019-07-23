@@ -1,9 +1,14 @@
 import blog_poller
+import pickle
+
+
+def read_html_from_pickle():
+    with open('poller/daily_poller/test/website_data.pickle', 'rb') as handle:
+        return pickle.load(handle)
 
 
 def test_get_medium_data_dict():
-    f = open("poller/daily_poller/test/website_data.html")
-    html = f.read()
+    html = read_html_from_pickle()
     medium_data = blog_poller.get_medium_data_dict(html)
 
     docs = blog_poller.create_docs(medium_data)
