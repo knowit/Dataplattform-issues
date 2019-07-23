@@ -2,21 +2,18 @@ import os
 import xmltodict
 import urllib.request
 import urllib.parse
-import boto3
-from boto3.dynamodb.conditions import Key, Attr
-import json
+from poller_util import PollerUtil
 
-client = None
-table = None
+UBW_TYPE = "UBWType"
 
 
-def lambda_handler(event, context):
-    global client
-    global table
-    client = boto3.resource("dynamodb")
-    table = client.Table(os.getenv("DATAPLATTFORM_POLLING_STATUS_TABLENAME"))
-
-    last_inserted_doc = fetch_last_inserted_doc()
+def poll():
+    """
+    This method gets run every day and should fetch data from the website and compare it to a
+    database in order to avoid duplicates.
+    :return: True if everything was successful.
+    """
+    last_inserted_doc = PollerUtil.fetch_last_inserted_doc(UBW_TYPE)
 
     ubw_datas = fetch_ubw_data()
     for ubw_data in ubw_datas:
@@ -25,12 +22,9 @@ def lambda_handler(event, context):
             if last_doc_new is not None:
                 last_inserted_doc = last_doc_new
 
-    upload_last_inserted_doc(last_inserted_doc)
+    PollerUtil.upload_last_inserted_doc(last_inserted_doc, UBW_TYPE)
 
-    return {
-        'statusCode': 200,
-        'body': ''
-    }
+    return True
 
 
 def send_request(url, data, headers):
@@ -156,57 +150,13 @@ def fetch_ubw_data():
         'GetTemplateResultAsXMLResult']['TemplateResult']['Agresso']['AgressoQE']
 
 
-def upload_last_inserted_doc(last_inserted_doc, type="UBWType"):
-    """
-    This method simply inserts the last_inserted_doc's reg_period into a table.
-    :param last_inserted_doc: The document that is going to be uploaded.
-    :param type: Which type this is.
-    :return: Nothing
-    """
-    table.put_item(Item={
-        'type': type,
-        'last_inserted_doc': last_inserted_doc
-    })
-
-
-def fetch_last_inserted_doc(type="UBWType"):
-    """
-    This method fetches the last_inserted_doc from the DynamoDB table and returns the
-    last_inserted_doc.
-    :param type: Which type.
-    :return: last_inserted_doc. or None if there was nothing saved.
-    """
-    response = table.query(KeyConditionExpression=Key('type').eq(type))
-    items = response["Items"]
-    if items:
-        return items[0]["last_inserted_doc"]
-    return None
-
-
-def post_to_ingest_api(data):
-    """
-    This method uploads data to the ingest API.
-    :param data: the data you want to send, as a dictionary.
-    :return: a status code.
-    """
-    ingest_url = os.getenv("DATAPLATTFORM_INGEST_URL")
-    apikey = os.getenv("DATAPLATTFORM_INGEST_APIKEY")
-    data = json.dumps(data).encode()
-    try:
-        request = urllib.request.Request(ingest_url, data=data, headers={"x-api-key": apikey})
-        response = urllib.request.urlopen(request)
-        return response.getcode()
-    except urllib.request.HTTPError:
-        return 500
-
-
 def insert_new_ubw_data(doc):
     """
     :param doc: A ubw document.
     :return: This method attempts to upload the ubw document into the ingest API and if that was
     successful it returns the reg_period of this document. (aka the last_inserted_doc)
     """
-    if post_to_ingest_api(doc) == 200:
+    if PollerUtil.post_to_ingest_api(doc, UBW_TYPE) == 200:
         # This method is always updating the last_inserted_doc global after uploading new data.
         return doc["reg_period"]
     return None
