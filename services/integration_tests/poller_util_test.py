@@ -1,9 +1,16 @@
 import os
 from poller_util import PollerUtil
+import integration_tests_util as util
+
+POLLER_CONFIG = util.read_serverless_output("poller")
+
+
+def test_load_config():
+    assert "PollingStatusTableName" in POLLER_CONFIG
 
 
 def test_upload_and_fetch_last_inserted():
-    os.environ["DATAPLATTFORM_POLLING_STATUS_TABLENAME"] = "Dataplattform-test-polling_status"
+    os.environ["DATAPLATTFORM_POLLING_STATUS_TABLENAME"] = POLLER_CONFIG["PollingStatusTableName"]
 
     TESTING_TYPE = "TestingTestingType"
     last_inserted_correct = "123"

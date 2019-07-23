@@ -4,9 +4,16 @@ import urllib.request
 import urllib.parse
 from poller_util import PollerUtil
 
+UBW_TYPE = "UBWType"
+
 
 def poll():
-    last_inserted_doc = PollerUtil.fetch_last_inserted_doc("UBWType")
+    """
+    This method gets run every day and should fetch data from the website and compare it to a
+    database in order to avoid duplicates.
+    :return: True if everything was successful.
+    """
+    last_inserted_doc = PollerUtil.fetch_last_inserted_doc(UBW_TYPE)
 
     ubw_datas = fetch_ubw_data()
     for ubw_data in ubw_datas:
@@ -15,7 +22,7 @@ def poll():
             if last_doc_new is not None:
                 last_inserted_doc = last_doc_new
 
-    PollerUtil.upload_last_inserted_doc(last_inserted_doc, "UBWType")
+    PollerUtil.upload_last_inserted_doc(last_inserted_doc, UBW_TYPE)
 
     return True
 
@@ -149,7 +156,7 @@ def insert_new_ubw_data(doc):
     :return: This method attempts to upload the ubw document into the ingest API and if that was
     successful it returns the reg_period of this document. (aka the last_inserted_doc)
     """
-    if PollerUtil.post_to_ingest_api(doc, "UBWType") == 200:
+    if PollerUtil.post_to_ingest_api(doc, UBW_TYPE) == 200:
         # This method is always updating the last_inserted_doc global after uploading new data.
         return doc["reg_period"]
     return None

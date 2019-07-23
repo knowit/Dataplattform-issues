@@ -8,6 +8,8 @@ custom:
   pythonRequirements:
     useDownloadCache: true
     useStaticCache: true
+  output:
+    file: ../integration_tests/poller.serverless_outputs.json
 
 provider:
   name: aws
@@ -92,6 +94,11 @@ resources:
         ProvisionedThroughput:
           ReadCapacityUnits: 5
           WriteCapacityUnits: 5
+  Outputs:
+    PollingStatusTableName:
+      Description: "The table name for the polling status table."
+      Value: ${self:custom.pollingStatusTable}
 
 plugins:
   - serverless-python-requirements
+  - serverless-stack-output

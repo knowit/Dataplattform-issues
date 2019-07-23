@@ -24,7 +24,7 @@ class PollerUtil:
     def __init__(self):
         """ Virtually private constructor. """
         if PollerUtil.__table is not None and PollerUtil.__client is not None:
-            raise Exception("This class is a singleton!")
+            raise Exception("This class should only be created once.")
         else:
             client = boto3.resource("dynamodb")
             table = client.Table(os.getenv("DATAPLATTFORM_POLLING_STATUS_TABLENAME"))
@@ -63,6 +63,7 @@ class PollerUtil:
         """
         This method uploads data to the ingest API.
         :param data: the data you want to send, as a dictionary.
+        :param type: Which data type.
         :return: a status code.
         """
         ingest_url = os.getenv("DATAPLATTFORM_INGEST_URL") + type
