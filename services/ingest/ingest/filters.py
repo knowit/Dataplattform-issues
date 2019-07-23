@@ -32,11 +32,16 @@ def filter_slack_reaction(data):
     data_dict = json.loads(data)
     if "event" not in data_dict:
         return None
+    channel = data_dict["event"]["item"]["channel"]
+    if not channel.startswith("C"):
+        # Drop the data point if message was not in a public channel
+        return None
+
     document = {
         "event": {
             "type": "reaction_added",
             "item": {
-                "channel": data_dict["event"]["item"]["channel"]
+                "channel": channel
             },
             "reaction": data_dict["event"]["reaction"]
         },
