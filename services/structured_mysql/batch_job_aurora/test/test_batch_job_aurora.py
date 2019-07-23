@@ -3,6 +3,7 @@ import batch_job_aurora
 import data_types.GithubType as GithubType
 import data_types.AbstractType as AbstractType
 import data_types.SlackType as SlackType
+import data_types.slack_util as slack_util
 import re
 
 
@@ -91,17 +92,20 @@ def test_get_column_values():
 
 def test_get_slack_channel_cached():
     # Create a fake channel with a fake user dictionary.
-    SlackType.slack_channel_id_to_channel_info["channel123"] = {
+    channel_id = "channel123"
+    SlackType.slack_channel_id_to_channel_info[channel_id] = {
         "channel": {"name": "Epic Channel name"},
         "ok": True
     }
-    cached_channel = SlackType.get_slack_channel({"data": {"event": {"channel": "channel123"}}})
+
+    cached_channel = slack_util.get_slack_channel_name(channel_id)
     assert cached_channel == "Epic Channel name"
 
 
 def test_deleted_channel():
+    channel_id = "channel123"
     SlackType.slack_channel_id_to_channel_info["channel123"] = {
         "ok": False
     }
-    cached_channel = SlackType.get_slack_channel({"data": {"event": {"channel": "channel123"}}})
+    cached_channel = slack_util.get_slack_channel_name(channel_id)
     assert cached_channel is None
