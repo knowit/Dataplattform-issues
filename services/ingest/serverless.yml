@@ -73,15 +73,11 @@ functions:
       DATAPLATTFORM_SLACK_SECRET: ${ssm:dataplattform_slack_shared_secret}
       DATAPLATTFORM_INGEST_APIKEY: ${ssm:dataplattform_slack_ingest_apikey}
       DATAPLATTFORM_INGEST_URL:
-        !Join
-        - ''
-        - - 'https://'
-          - !Ref ApiGatewayRestApi
-          - '.execute-api.'
-          - ${self:provider.region}
-          - '.amazonaws.com/'
-          - ${self:custom.stage}
-          - '/dataplattform_ingest/SlackType'
+        Fn::Join:
+          - ""
+          - - "https://"
+            - Ref: ApiGatewayRestApi
+            - ".execute-api.${self:provider.region}.amazonaws.com/${self:custom.stage}/dataplattform_ingest/"
     events:
       - http:
           path: slack_ingest
