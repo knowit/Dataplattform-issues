@@ -5,14 +5,19 @@ custom:
   project: Dataplattform-${self:custom.stage}
   batch_job_lambda: ${self:custom.project}-batch_job_mysql
   database_name: Dataplattform
-  db_admin_password: ${ssm:dataplattform_aurora_${self:custom.stage}_password}
-  pythonRequirements:
-    useDownloadCache: true
-    useStaticCache: true
+  database_port: 3306
   db:
     prod: db.t2.medium
     dev: db.t2.small
     test: db.t2.small
+  creds:
+    user: admin # TODO Hmm
+    password: ${ssm:dataplattform_aurora_${self:custom.stage}_password}
+  pythonRequirements:
+    useDownloadCache: true
+    useStaticCache: true
+  output:
+    file: ../integration_tests/structured_mysql.serverless_outputs.json
 
 provider:
   name: aws
@@ -46,10 +51,10 @@ functions:
         Fn::GetAtt:
           - auroraCluster
           - Endpoint.Address
-      DATAPLATTFORM_AURORA_PORT: 3306
+      DATAPLATTFORM_AURORA_PORT: ${self:custom.database_port}
       DATAPLATTFORM_AURORA_DB_NAME: ${self:custom.database_name}
-      DATAPLATTFORM_AURORA_USER: admin # TODO Hmmmmm
-      DATAPLATTFORM_AURORA_PASSWORD: ${self:custom.db_admin_password}
+      DATAPLATTFORM_AURORA_USER: ${self:custom.creds.user}
+      DATAPLATTFORM_AURORA_PASSWORD: ${self:custom.creds.password}
       DATAPLATTFORM_FETCH_APIKEY: ${ssm:dataplattform_mysql_fetch_apikey}
       DATAPLATTFORM_FETCH_URL:
         'Fn::ImportValue': ${self:custom.project}-get-docs-url
@@ -107,7 +112,7 @@ resources:
         EngineMode: provisioned
         EngineVersion: '5.7.12'
         MasterUsername: admin
-        MasterUserPassword: ${self:custom.db_admin_password}
+        MasterUserPassword: ${self:custom.creds.password}
         Port: 3306
         StorageEncrypted: true
         Tags:
@@ -149,6 +154,16 @@ resources:
           - ReadEndpoint.Address
       Export:
         Name: ${self:custom.project}-aurora-endpoint-ro
+    auroraDBUser:
+      Value: ${self:custom.creds.user}
+    auroraDBPassword:
+      Value: ${self:custom.creds.password}
+    auroraDBPort:
+      Value: ${self:custom.database_port}
+    auroraDBName:
+      Value: ${self:custom.database_name}
+
 
 plugins:
   - serverless-python-requirements
+  - serverless-stack-output

@@ -1,7 +1,9 @@
 # Poller
-Disse modulene legger inn data på en litt annerledes måte enn ingest-modulene. Disse må bli 
-regelmessig kjørt for å så hente ut data fra datakilden og så huske hvor mye av dataen som har
-allerede blitt lastet opp i dataplattformen. Dette må bli gjort fordi det er en del datakilder som
-ikke har ting som webhooks og må dermed gjøre det på denne måten.
-Til nå så er det bare UBW data som må bli pollet, men om det kommer flere datakilder så burde alle
-samles til en stor lambda for å gjøre det litt mer effektivt.
+
+Her ligger kode for lambdaer som skal kjøres periodisk for å polle fra en datakilde og POSTe
+dataen til det vanlige ingest-endepunktet. Dette må gjøres for datakilder som ikke selv sender
+et event til dataplattformen når noe skjer.
+
+Hvis du skal lage en ny poller som kjøres daglig kan du legge den inn i `daily_poller`, som
+allerede har kode for UBW og knowitlabs. Hvis dette ikke passer kan du lage en ny lambda med
+et annet rate-uttryk eller lignende.
