@@ -1,28 +1,31 @@
 # Dataplattform
 
+## Hente ut data fra dataplattformen
+https://knowit.github.io/Dataplattform/
+
+## Sende inn data
+https://github.com/knowit/Dataplattform/wiki/Sende-inn-data-til-dataplattformen
+
 ## Mappestruktur
-  * ```lambda/```
-      * Denne inneholder alle lambda-funksjonene som ble skrevet for AWS lambda.
+  * ```services/```
+      * Denne inneholder alle `serverless` services som deployes til AWS.
   * ```event_knapp/```
       * Kode for fysisk feedback-knapp
 
 ## Oppsett
-Se ```lambda/``` for oppsett av lambda-funksjoner i AWS.
-### DynamoDB i AWS
-  * Lag et DynamoDB table med navn ```dataplattform```
-      * Partition key ```type``` (String)
-      * Sort key ```timestamp_random``` (Binary)
+Se ```services/README.md``` for deploying til AWS og oppsett av QuickSight.
 
-### Aurora i AWS
-  * Lag en Aurora-instans basert på MySQL 5.7 eller nyere
-  * Legg inn nøklene som miljøvariable som beskrevet i  ```lambda/batch_job_aurora```
-  * Importer databasen i QuickSight
 
-## Disse datakildene inneholder persondata:
+## Disse datakildene kan inneholde persondata:
   * github
       * Github har potensielt sensitiv informasjon, her blir det lagret både navn, e-post addresse
       og commit-melding, men vi filtrerer ut alt som ikke kommer fra offentlige repoer. Se
-      ```lambda/ingest/filters.py```.
+      ```services/ingest/ingest/filters.py```.
   * slack
       * Slack webhooks kan inneholde alt, avhengig av hvordan integrasjons-appen er konfigurert.
-      Vi tar bare vare på tidspunkt og kanal. Se ```lambda/ingest/filters.py```.
+      Vi tar bare vare på tidspunkt og kanal for meldinger skrevet i offentlige kanaler.
+      Se ```lambda/ingest/filters.py```.
+      For reactions til meldinger lagrer vi kanal, tidspunkt og hvilken emoticon som ble brukt.
+  * knowitlabs (blogg)
+      * Vi scraper knowitlabs.no og lagrer litt offentlig informasjon om hvert blogginnlegg, som
+        tittel, undertittel, forfatter og tidspunkt.
