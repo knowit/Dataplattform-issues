@@ -8,6 +8,8 @@ provider:
   name: aws
   stage: dev
   region: eu-central-1
+  stackTags:
+    Project: ${self:custom.project}
   tags:
     Project: ${self:custom.project}
 

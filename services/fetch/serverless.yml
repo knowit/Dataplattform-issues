@@ -4,7 +4,9 @@ custom:
   stage: ${opt:stage, self:provider.stage}
   project: Dataplattform-${self:custom.stage}
   get_docs_lambda: ${self:custom.project}-get_docs
-  fetch_apikey_value: ${ssm:dataplattform_${self:custom.stage}_fetch_apikey}
+  apikeys:
+    fetch: ${ssm:dataplattform_${self:custom.stage}_fetch_apikey}
+    batch_job: ${ssm:dataplattform_${self:custom.stage}_batch_job_apikey}
   output:
     file: ../integration_tests/fetch.serverless_outputs.json
 
@@ -17,13 +19,15 @@ provider:
   timeout: 15
   apiKeys:
     - name: ${self:custom.project}-fetch_apikey
-      value: ${self:custom.fetch_apikey_value}
+      value: ${self:custom.apikeys.fetch}
     - name: ${self:custom.project}-batch_job-apikey
-      value: ${ssm:dataplattform_mysql_fetch_apikey}
+      value: ${self:custom.apikeys.batch_job}
   usagePlan:
     throttle: #TODO decide on some values
       burstLimit: 200
       rateLimit: 50
+  stackTags:
+    Project: ${self:custom.project}
   tags:
     Project: ${self:custom.project}
 
@@ -100,7 +104,7 @@ resources:
         Name: ${self:custom.project}-get-docs-url
     TravisFetchApiKey:
       Description: "Fetch key for automated integration tests"
-      Value: ${self:custom.fetch_apikey_value}
+      Value: ${self:custom.apikeys.fetch}
       Export:
         Name: ${self:custom.project}-fetch-apikey
 plugins:

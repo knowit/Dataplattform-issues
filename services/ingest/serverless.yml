@@ -6,6 +6,12 @@ custom:
   ingest_lambda: ${self:custom.project}-ingest
   slack_ingest_lambda: ${self:custom.project}-slack_ingest
   github_ingest_lambda: ${self:custom.project}-github_ingest
+  apikeys:
+    slack_ingest: ${ssm:dataplattform_${self:custom.stage}_slack_ingest_apikey}
+    github_ingest: ${ssm:dataplattform_${self:custom.stage}_github_ingest_apikey}
+    slack_app_ingest: ${ssm:dataplattform_${self:custom.stage}_slack_event_app_ingest_apikey}
+    polling_ingest: ${ssm:dataplattform_${self:custom.stage}_polling_ingest_apikey}
+    travis_ingest: ${ssm:dataplattform_${self:custom.stage}_travis_ingest_apikey}
   output:
     file: ../integration_tests/ingest.serverless_outputs.json
 
@@ -20,19 +26,21 @@ provider:
   apiKeys:
     - name: ${self:custom.project}-ingest-key
     - name: ${self:custom.project}-slack_ingest-apikey
-      value: ${ssm:dataplattform_slack_ingest_apikey}
+      value: ${self:custom.apikeys.slack_ingest}
     - name: ${self:custom.project}-github_ingest-apikey
-      value: ${ssm:dataplattform_github_ingest_apikey}
+      value: ${self:custom.apikeys.github_ingest}
     - name: ${self:custom.project}-slack_event_app_ingest-apikey
-      value: ${ssm:dataplattform_slack_event_app_ingest_apikey}
+      value: ${self:custom.apikeys.slack_app_ingest}
     - name: ${self:custom.project}-polling_ingest_apikey
-      value: ${ssm:dataplattform_polling_ingest_apikey}
+      value: ${self:custom.apikeys.polling_ingest}
     - name: ${self:custom.project}-travis_ingest_apikey
-      value: ${ssm:dataplattform_travis_ingest_apikey}
+      value: ${self:custom.apikeys.travis_ingest}
   usagePlan:
     throttle: #TODO decide on some values
       burstLimit: 200
       rateLimit: 50
+  stackTags:
+    Project: ${self:custom.project}
   tags:
     Project: ${self:custom.project}
 
@@ -71,7 +79,7 @@ functions:
         - 'slack_ingest/*.py'
     environment:
       DATAPLATTFORM_SLACK_SECRET: ${ssm:dataplattform_slack_shared_secret}
-      DATAPLATTFORM_INGEST_APIKEY: ${ssm:dataplattform_slack_ingest_apikey}
+      DATAPLATTFORM_INGEST_APIKEY: ${self:custom.apikeys.slack_ingest}
       DATAPLATTFORM_INGEST_URL:
         Fn::Join:
           - ""
@@ -92,7 +100,7 @@ functions:
         - 'github_ingest/*.py'
     environment:
       DATAPLATTFORM_GITHUB_SECRET: ${ssm:dataplattform_github_shared_secret}
-      DATAPLATTFORM_INGEST_APIKEY: ${ssm:dataplattform_github_ingest_apikey}
+      DATAPLATTFORM_INGEST_APIKEY: ${self:custom.apikeys.github_ingest}
       DATAPLATTFORM_INGEST_URL:
         !Join
         - ''
@@ -148,7 +156,7 @@ resources:
         Name: ${self:custom.project}-ingest-url
     TravisIngestKey:
       Description: "Ingest key for automated integration tests"
-      Value: ${ssm:dataplattform_travis_ingest_apikey}
+      Value: ${self:custom.apikeys.travis_ingest}
       Export:
         Name: ${self:custom.project}-travis-ingest-apikey
 

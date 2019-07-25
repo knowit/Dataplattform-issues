@@ -4,11 +4,17 @@ custom:
   stage: ${opt:stage, self:provider.stage}
   project: Dataplattform-${self:custom.stage}
   rawTable: ${self:custom.project}
+  point_in_time_recovery:
+    prod: true
+    dev: false
+    test: false
 
 provider:
   name: aws
   stage: dev
   region: eu-central-1
+  stackTags:
+    Project: ${self:custom.project}
   tags:
     Project: ${self:custom.project}
 
@@ -31,6 +37,8 @@ resources:
         ProvisionedThroughput:
           ReadCapacityUnits: 10
           WriteCapacityUnits: 5
+        PointInTimeRecoverySpecification:
+          PointInTimeRecoveryEnabled: ${self:custom.point_in_time_recovery.${self:custom.stage}}
 
   Outputs: #TODO export actual table names as well?
     RawTableArn:
