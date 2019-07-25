@@ -67,7 +67,7 @@ void loop() {
             } else if (btn2) {
                 post += "1 ";
             }
-            post += "\"}";
+            post += "\}";
             Serial.println(post);
             int response = http.POST(post);
             digitalWrite(pin_b, LOW);
