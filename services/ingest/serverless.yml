@@ -39,6 +39,8 @@ provider:
     throttle: #TODO decide on some values
       burstLimit: 200
       rateLimit: 50
+  stackTags:
+    Project: ${self:custom.project}
   tags:
     Project: ${self:custom.project}
 

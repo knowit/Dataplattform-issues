@@ -19,6 +19,8 @@ provider:
   runtime: python3.7
   memorySize: 1024
   timeout: 30
+  stackTags:
+    Project: ${self:custom.project}
   tags:
     Project: ${self:custom.project}
 
