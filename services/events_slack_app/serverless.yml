@@ -6,6 +6,7 @@ custom:
   slack_command_lambda: ${self:custom.project}-slack_command
   slack_response_lambda: ${self:custom.project}-slack_response
   eventTable: ${self:custom.project}-event_codes
+  ingest_apikey: ${ssm:dataplattform_${self:custom.stage}_slack_event_app_ingest_apikey}
   pythonRequirements:
     useDownloadCache: true
     useStaticCache: true
@@ -60,7 +61,7 @@ functions:
         - ''
         - - 'Fn::ImportValue': ${self:custom.project}-ingest-url
           - EventType
-      DATAPLATTFORM_INGEST_APIKEY: ${ssm:dataplattform_slack_event_app_ingest_apikey}
+      DATAPLATTFORM_INGEST_APIKEY: ${self:custom.ingest_apikey}
       SLACK_BOT_TOKEN: ${ssm:dataplattform_slack_event_oauth}
       DATAPLATTFORM_EVENT_TABLE: ${self:custom.eventTable}
 

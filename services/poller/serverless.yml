@@ -5,6 +5,7 @@ custom:
   project: Dataplattform-${self:custom.stage}
   daily_poller_lambda: ${self:custom.project}-daily_poller
   pollingStatusTable: ${self:custom.project}-polling_status
+  ingest_apikey: ${ssm:dataplattform_${self:custom.stage}_polling_ingest_apikey}
   pythonRequirements:
     useDownloadCache: true
     useStaticCache: true
@@ -39,7 +40,7 @@ functions:
         - 'daily_poller/*.py'
     environment:
       DATAPLATTFORM_POLLING_STATUS_TABLENAME: ${self:custom.pollingStatusTable}
-      DATAPLATTFORM_INGEST_APIKEY: ${ssm:dataplattform_polling_ingest_apikey}
+      DATAPLATTFORM_INGEST_APIKEY: ${self:custom.ingest_apikey}
       DATAPLATTFORM_INGEST_URL:
         'Fn::ImportValue': ${self:custom.project}-ingest-url
       UBW_CLIENT: ${ssm:dataplattform_ubw_client}
