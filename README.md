@@ -10,7 +10,9 @@ https://github.com/knowit/Dataplattform/wiki/Sende-inn-data-til-dataplattformen
   * ```services/```
       * Denne inneholder alle `serverless` services som deployes til AWS.
   * ```event_knapp/```
-      * Kode for fysisk feedback-knapp
+      * Kode for fysisk feedback-knapp med 3 alternativer
+  * ```rate_day/```
+      * Kode for fysisk feedback-knapp med 2 alternativer
 
 ## Oppsett
 Se ```services/README.md``` for deploying til AWS og oppsett av QuickSight.
