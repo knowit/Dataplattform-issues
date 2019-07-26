@@ -33,18 +33,23 @@ class DataFetcher:
             DataFetcher.__connection = connection
 
     @staticmethod
-    def fetch_data(date_to=None, days=1):
-        if date_to is None:
-            date_to = datetime.now()
-        date_from = date_to - timedelta(days=1)
+    def fetch_data(date_from, days=1):
+        date_to = date_from + timedelta(days=1)
+        x_data_list = []
+        label_list = []
+        for _ in range(days):
+            timestamp_from = date_from.timestamp()
+            timestamp_to = date_to.timestamp()
+            x_data = DataFetcher.fetch_x_data(timestamp_from, timestamp_to)
+            label = DataFetcher.fetch_label(timestamp_from, timestamp_to)
 
-        timestamp_from = date_from.timestamp()
-        timestamp_to = date_to.timestamp()
-        x_data = DataFetcher.fetch_x_data(timestamp_from, timestamp_to)
-        y_data = DataFetcher.fetch_label(timestamp_from, timestamp_to)
-        if y_data is None:
-            return None
-        return [x_data], [y_data]
+            if label is not None:
+                x_data_list.append(x_data)
+                label_list.append(label)
+
+            date_to += timedelta(days=1)
+            date_from += timedelta(days=1)
+        return x_data_list, label_list
 
     @staticmethod
     def fetch_x_data(timestamp_from, timestamp_to):
@@ -54,13 +59,12 @@ class DataFetcher:
             cursor = DataFetcher.get_connection().cursor()
             cursor.execute(sql_query, (timestamp_from, timestamp_to))
             query_result = cursor.fetchall()
-            if len(query_result) > 0:
-                if "timestamp" in query_result[0]:
-                    for i in range(len(query_result)):
-                        time_of_day = DataFetcher.timestamp_to_time_of_day(query_result[i]["timestamp"])
-                        query_result[i]["time_of_day"] = time_of_day
-                        del query_result[i]["timestamp"]
-                results[data_type] = query_result
+            if len(query_result) > 0 and "timestamp" in query_result[0]:
+                for i in range(len(query_result)):
+                    time_of_day = DataFetcher.timestamp_to_time_of_day(query_result[i]["timestamp"])
+                    query_result[i]["time_of_day"] = time_of_day
+                    del query_result[i]["timestamp"]
+            results[data_type] = query_result
 
         # slack_sql = "SELECT COUNT(*) as `count`, `channel_name` FROM `SlackType` WHERE `timestamp`>%s and `timestamp` <%s and `channel_name` IS NOT NULL GROUP BY `channel_name` ORDER BY `count` desc"
         slack_sql = "SELECT `timestamp` FROM `SlackType` WHERE `timestamp`>%s and `timestamp` <%s"
@@ -79,9 +83,14 @@ class DataFetcher:
 
     @staticmethod
     def fetch_label(timestamp_from, timestamp_to):
-        # TODO: This should do a query similar to the event_rating query.
-        return 5 / 6
-        # This should return None if no one voted this day.
+        # In order to get the ratio in the range (0, 1) we add one, and divide by two.
+        event_rating_sql = "select (((sum(button) / count(button)) + 1) / 2) as `ratio` from `DayRatingType` where `timestamp`>%s and `timestamp`<%s"
+        cursor = DataFetcher.get_connection().cursor()
+        cursor.execute(event_rating_sql, (timestamp_from, timestamp_to))
+        query_result = cursor.fetchone()
+        if query_result["ratio"] is not None:
+            return float(query_result["ratio"])
+        return None
 
     @staticmethod
     def timestamp_to_time_of_day(timestamp):
