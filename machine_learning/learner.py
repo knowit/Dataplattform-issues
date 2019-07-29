@@ -1,5 +1,4 @@
 from datetime import datetime
-
 import tensorflow
 import tensorflow_transform as tft
 import tensorflow_transform.beam as tft_beam
@@ -43,14 +42,18 @@ def process_slack_data(data):
 
 def baseline_model():
     model = tensorflow.keras.Sequential()
-    model.add(tensorflow.keras.layers.Dense(1000, input_dim=3))
-    model.add(tensorflow.keras.layers.Dense(100))
-    model.add(tensorflow.keras.layers.Dense(10))
+    # TODO: Once you have more data figure out which is the best model. LSTM or just dense.
+    model.add(tensorflow.keras.layers.Embedding(3, output_dim=1000))
+    model.add(tensorflow.keras.layers.LSTM(100))
+    # model.add(tensorflow.keras.layers.Dense(1000, input_dim=3))
+    # model.add(tensorflow.keras.layers.Dense(100))
+    # model.add(tensorflow.keras.layers.Dense(10))
     model.add(tensorflow.keras.layers.Dense(1, activation='sigmoid'))
     model.compile(
         optimizer="adam",
-        loss="mean_squared_error",
-        metrics=['accuracy'])
+        loss="mean_absolute_error",  # It seems that for now mean_absolute_error is better than
+        # squared_error.
+        metrics=['mean_absolute_error', 'mean_squared_error'])
 
     return model
 
@@ -121,11 +124,13 @@ def main():
 
     raw_data = [{'earlies': 113, 'middays': 56, 'lates': 87},
                 {'earlies': 22, 'middays': 38, 'lates': 23},
-                {'earlies': 68, 'middays': 84, 'lates': 20}]
+                {'earlies': 67, 'middays': 83, 'lates': 19}]
     data = transform_data(raw_data)
 
     prediction = predict(model, data)
-    print(prediction)  # Should print: [0.83333333, 1.0, 0.77777778]
+    print(prediction)  # Should print: [0.83333333, 1.0, 0.8]
+    # res = [0.83333333, 1.0, 0.8]
+    # acc = model.evaluate(data, res)
 
 
 if __name__ == '__main__':
