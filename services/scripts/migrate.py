@@ -76,6 +76,7 @@ def delete_documents(table_name, document_type, timestamp_from, timestamp_to):
 
 if __name__ == '__main__':
     # migrate("EventType", "Dataplattform-dev", "Dataplattform-test")
-    # migrate("EventRatingType")
+    # migrate("EventType", "Dataplattform-dev", "Dataplattform-test",
+    #         regenerate_timestamp_random=True)
     # delete_documents("Dataplattform-test", "YeetType", 0, 100000000000)
     pass
