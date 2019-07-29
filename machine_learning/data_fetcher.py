@@ -61,7 +61,9 @@ class DataFetcher:
     @staticmethod
     def fetch_x_data(timestamp_from, timestamp_to):
         # for a day.
-        results = {}
+        results = {
+            "weekday": DataFetcher.get_weekday(timestamp_to)
+        }
 
         def execute_sql_query(data_type, sql_query):
             cursor = DataFetcher.get_connection().cursor()
@@ -130,3 +132,8 @@ class DataFetcher:
             return "midday"
         else:
             return "late"
+
+    @staticmethod
+    def get_weekday(timestamp):
+        dt_object = datetime.fromtimestamp(timestamp)
+        return dt_object.weekday()

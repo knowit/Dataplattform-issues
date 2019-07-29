@@ -24,7 +24,8 @@ def preprocess(data):
         "negative_normalized": negative_normalized,
         "neutral_normalized": neutral_normalized,
         "positive_normalized": positive_normalized,
-        "github_count_normalized": github_count_normalized
+        "github_count_normalized": github_count_normalized,
+        "weekday": data["weekday"]
 
     }
     return out
@@ -35,7 +36,7 @@ def baseline_model():
     # TODO: Once you have more data figure out which is the best model. LSTM or just dense.
     # model.add(tensorflow.keras.layers.Embedding(6, output_dim=1000))
     # model.add(tensorflow.keras.layers.LSTM(100))
-    model.add(tensorflow.keras.layers.Dense(1000, input_dim=7))
+    model.add(tensorflow.keras.layers.Dense(1000, input_dim=8))
     model.add(tensorflow.keras.layers.Dense(100))
     model.add(tensorflow.keras.layers.Dense(10))
     model.add(tensorflow.keras.layers.Dense(1, activation='sigmoid'))
@@ -66,7 +67,8 @@ def transform_data(data):
                 'neutral': tensorflow.FixedLenFeature([], tensorflow.int64),
                 # Github count
                 'github_count': tensorflow.FixedLenFeature([], tensorflow.int64),
-
+                # weekday
+                'weekday': tensorflow.FixedLenFeature([], tensorflow.int64),
             }))
 
         transformed_dataset, transform_fn = (
@@ -82,7 +84,8 @@ def transform_data(data):
                    trans["negative_normalized"],
                    trans["neutral_normalized"],
                    trans["positive_normalized"],
-                   trans["github_count_normalized"]]
+                   trans["github_count_normalized"],
+                   trans["weekday"]]
 
         retransformed_data.append(current)
 
@@ -116,14 +119,14 @@ def main():
     model = train(start_date, days=10)
 
     raw_data = [
-        {'earlies': 113, 'middays': 56, 'lates': 87, 'negative': 0, 'positive': 0, 'neutral': 0,
-         'github_count': 6},
-        {'earlies': 22, 'middays': 38, 'lates': 23, 'negative': 0, 'positive': 0, 'neutral': 0,
-         'github_count': 10},
-        {'earlies': 67, 'middays': 83, 'lates': 23, 'negative': 0, 'positive': 0, 'neutral': 0,
-         'github_count': 12},
-        {'earlies': 12, 'middays': 107, 'lates': 33, 'negative': 1, 'positive': 12, 'neutral': 2,
-         'github_count': 2}]
+        {'weekday': 2, 'earlies': 113, 'middays': 56, 'lates': 87, 'negative': 0, 'positive': 0,
+         'neutral': 0, 'github_count': 6},
+        {'weekday': 3, 'earlies': 22, 'middays': 38, 'lates': 23, 'negative': 0, 'positive': 0,
+         'neutral': 0, 'github_count': 10},
+        {'weekday': 4, 'earlies': 67, 'middays': 83, 'lates': 23, 'negative': 0, 'positive': 0,
+         'neutral': 0, 'github_count': 12},
+        {'weekday': 0, 'earlies': 12, 'middays': 107, 'lates': 51, 'negative': 1, 'positive': 12,
+         'neutral': 2, 'github_count': 5}]
     data = transform_data(raw_data)
 
     prediction = predict(model, data)
