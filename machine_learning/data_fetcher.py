@@ -9,7 +9,8 @@ class DataFetcher:
 
     pre_processing_types = {
         "SlackType": ProcessingData.process_slack_data,
-        "SlackReactionType": ProcessingData.process_slack_reaction_data
+        "SlackReactionType": ProcessingData.process_slack_reaction_data,
+        "GithubType": ProcessingData.process_github_data
     }
 
     @staticmethod
@@ -66,9 +67,11 @@ class DataFetcher:
             cursor = DataFetcher.get_connection().cursor()
             cursor.execute(sql_query, (timestamp_from, timestamp_to))
             query_result = cursor.fetchall()
+            print(data_type, query_result)
             if len(query_result) > 0 and "timestamp" in query_result[0]:
                 for i in range(len(query_result)):
-                    time_of_day = DataFetcher.timestamp_to_time_of_day(query_result[i]["timestamp"])
+                    time_of_day = DataFetcher.timestamp_to_time_of_day(
+                        query_result[i]["timestamp"])
                     query_result[i]["time_of_day"] = time_of_day
                     del query_result[i]["timestamp"]
             if data_type in DataFetcher.pre_processing_types:
@@ -77,20 +80,26 @@ class DataFetcher:
 
             results.update(query_result)
 
-        # slack_sql = "SELECT COUNT(*) as `count`, `channel_name` FROM `SlackType` WHERE `timestamp`>%s and `timestamp` <%s and `channel_name` IS NOT NULL GROUP BY `channel_name` ORDER BY `count` desc"
+        # slack_sql = "SELECT COUNT(*) as `count`, `channel_name` FROM `SlackType` WHERE " \
+        #             "`timestamp`>%s and `timestamp` <%s and `channel_name` IS NOT NULL GROUP" \
+        #             " BY `channel_name` ORDER BY `count` desc"
         slack_sql = "SELECT `timestamp` FROM `SlackType` WHERE `timestamp`>%s AND `timestamp` <%s"
         execute_sql_query("SlackType", slack_sql)
 
-        slack_reactions_sql = "SELECT `reaction`, count(*) as `count` FROM `SlackReactionType` WHERE `timestamp`>%s AND `timestamp` <%s GROUP BY `reaction`"
+        slack_reactions_sql = "SELECT `reaction`, count(*) as `count` FROM `SlackReactionType` " \
+                              "WHERE `timestamp`>%s AND `timestamp` <%s GROUP BY `reaction`"
         execute_sql_query("SlackReactionType", slack_reactions_sql)
 
-        # github_sql = "SELECT `language`, `repository_name`, `timestamp`, `ref` FROM `GithubType` WHERE `timestamp`>%s and `timestamp` <%s"
-        # execute_sql_query("GithubType", github_sql)
+        github_sql = "SELECT COUNT(*) as `count` FROM `GithubType` WHERE `timestamp`>%s and " \
+                     "`timestamp` <%s"
+        execute_sql_query("GithubType", github_sql)
         #
-        # event_sql = "SELECT `event_name`, `number_of_people`, `group` FROM `EventType` WHERE `timestamp`>%s and `timestamp` <%s"
+        # event_sql = "SELECT `event_name`, `number_of_people`, `group` FROM `EventType` WHERE
+        # `timestamp`>%s and `timestamp` <%s"
         # execute_sql_query("EventType", event_sql)
         #
-        # event_rating_sql = "Select `event_name`, sum(button) / count(button) as `ratio` from `EventRatingType` where `timestamp`>%s and `timestamp`<%s GROUP BY `event_name`"
+        # event_rating_sql = "Select `event_name`, sum(button) / count(button) as `ratio` from
+        # `EventRatingType` where `timestamp`>%s and `timestamp`<%s GROUP BY `event_name`"
         # execute_sql_query("EventRatingType", event_rating_sql)
 
         return results
@@ -98,7 +107,8 @@ class DataFetcher:
     @staticmethod
     def fetch_label(timestamp_from, timestamp_to):
         # In order to get the ratio in the range (0, 1) we add one, and divide by two.
-        event_rating_sql = "select (((sum(button) / count(button)) + 1) / 2) as `ratio` from `DayRatingType` where `timestamp`>%s and `timestamp`<%s"
+        event_rating_sql = "select (((sum(button) / count(button)) + 1) / 2) as `ratio` from " \
+                           "`DayRatingType` where `timestamp`>%s and `timestamp`<%s"
         cursor = DataFetcher.get_connection().cursor()
         cursor.execute(event_rating_sql, (timestamp_from, timestamp_to))
         query_result = cursor.fetchone()

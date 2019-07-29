@@ -110,3 +110,11 @@ class ProcessingData:
             if sentiment != "unknown":
                 out[sentiment] += count
         return out
+
+    @staticmethod
+    def process_github_data(data):
+        if len(data) == 0:
+            count = 0
+        else:
+            count = data[0]["count"]
+        return {"github_count": count}

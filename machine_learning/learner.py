@@ -15,6 +15,7 @@ def preprocess(data):
     negative_normalized = tft.scale_to_0_1(data["negative"])
     neutral_normalized = tft.scale_to_0_1(data["neutral"])
     positive_normalized = tft.scale_to_0_1(data["positive"])
+    github_count_normalized = tft.scale_to_0_1(data["github_count"])
 
     out = {
         "earlies_normalized": earlies_normalized,
@@ -22,7 +23,9 @@ def preprocess(data):
         "lates_normalized": lates_normalized,
         "negative_normalized": negative_normalized,
         "neutral_normalized": neutral_normalized,
-        "positive_normalized": positive_normalized
+        "positive_normalized": positive_normalized,
+        "github_count_normalized": github_count_normalized
+
     }
     return out
 
@@ -32,7 +35,7 @@ def baseline_model():
     # TODO: Once you have more data figure out which is the best model. LSTM or just dense.
     # model.add(tensorflow.keras.layers.Embedding(6, output_dim=1000))
     # model.add(tensorflow.keras.layers.LSTM(100))
-    model.add(tensorflow.keras.layers.Dense(1000, input_dim=6))
+    model.add(tensorflow.keras.layers.Dense(1000, input_dim=7))
     model.add(tensorflow.keras.layers.Dense(100))
     model.add(tensorflow.keras.layers.Dense(10))
     model.add(tensorflow.keras.layers.Dense(1, activation='sigmoid'))
@@ -61,6 +64,9 @@ def transform_data(data):
                 'negative': tensorflow.FixedLenFeature([], tensorflow.int64),
                 'positive': tensorflow.FixedLenFeature([], tensorflow.int64),
                 'neutral': tensorflow.FixedLenFeature([], tensorflow.int64),
+                # Github count
+                'github_count': tensorflow.FixedLenFeature([], tensorflow.int64),
+
             }))
 
         transformed_dataset, transform_fn = (
@@ -75,8 +81,11 @@ def transform_data(data):
                    trans["lates_normalized"],
                    trans["negative_normalized"],
                    trans["neutral_normalized"],
-                   trans["positive_normalized"]]
+                   trans["positive_normalized"],
+                   trans["github_count_normalized"]]
+
         retransformed_data.append(current)
+
     return array(retransformed_data)
 
 
@@ -90,7 +99,7 @@ def train(date=None, days=1):
     print(y_data)
 
     transformed_data = transform_data(raw_x_data)
-
+    print(transformed_data)
     model = baseline_model()
     model.fit(transformed_data, y_data, epochs=1000)
     return model
@@ -106,14 +115,15 @@ def main():
     start_date = datetime(2019, 7, 23, 22, 23, 29)
     model = train(start_date, days=10)
 
-    raw_data = [{'earlies': 113, 'middays': 56, 'lates': 87, 'negative': 0, 'positive': 0,
-                 'neutral': 0},
-                {'earlies': 22, 'middays': 38, 'lates': 23, 'negative': 0, 'positive': 0,
-                 'neutral': 0},
-                {'earlies': 67, 'middays': 83, 'lates': 23, 'negative': 0, 'positive': 0,
-                 'neutral': 0},
-                {'earlies': 12, 'middays': 107, 'lates': 33, 'negative': 1, 'positive': 12,
-                 'neutral': 2}]
+    raw_data = [
+        {'earlies': 113, 'middays': 56, 'lates': 87, 'negative': 0, 'positive': 0, 'neutral': 0,
+         'github_count': 6},
+        {'earlies': 22, 'middays': 38, 'lates': 23, 'negative': 0, 'positive': 0, 'neutral': 0,
+         'github_count': 10},
+        {'earlies': 67, 'middays': 83, 'lates': 23, 'negative': 0, 'positive': 0, 'neutral': 0,
+         'github_count': 12},
+        {'earlies': 12, 'middays': 107, 'lates': 33, 'negative': 1, 'positive': 12, 'neutral': 2,
+         'github_count': 2}]
     data = transform_data(raw_data)
 
     prediction = predict(model, data)
