@@ -12,42 +12,29 @@ def preprocess(data):
     earlies_normalized = tft.scale_to_0_1(data["earlies"])
     middays_normalized = tft.scale_to_0_1(data["middays"])
     lates_normalized = tft.scale_to_0_1(data["lates"])
+    negative_normalized = tft.scale_to_0_1(data["negative"])
+    neutral_normalized = tft.scale_to_0_1(data["neutral"])
+    positive_normalized = tft.scale_to_0_1(data["positive"])
 
     out = {
         "earlies_normalized": earlies_normalized,
         "middays_normalized": middays_normalized,
-        "lates_normalized": lates_normalized
+        "lates_normalized": lates_normalized,
+        "negative_normalized": negative_normalized,
+        "neutral_normalized": neutral_normalized,
+        "positive_normalized": positive_normalized
     }
     return out
-
-
-def process_slack_data(data):
-    earlies = 0
-    middays = 0
-    lates = 0
-    for slack_data in data["SlackType"]:
-        time_of_day = slack_data["time_of_day"]
-        if time_of_day == "early":
-            earlies += 1
-        elif time_of_day == "midday":
-            middays += 1
-        elif time_of_day == "late":
-            lates += 1
-    del data["SlackType"]
-    data["earlies"] = earlies
-    data["middays"] = middays
-    data["lates"] = lates
-    return data
 
 
 def baseline_model():
     model = tensorflow.keras.Sequential()
     # TODO: Once you have more data figure out which is the best model. LSTM or just dense.
-    model.add(tensorflow.keras.layers.Embedding(3, output_dim=1000))
-    model.add(tensorflow.keras.layers.LSTM(100))
-    # model.add(tensorflow.keras.layers.Dense(1000, input_dim=3))
-    # model.add(tensorflow.keras.layers.Dense(100))
-    # model.add(tensorflow.keras.layers.Dense(10))
+    # model.add(tensorflow.keras.layers.Embedding(6, output_dim=1000))
+    # model.add(tensorflow.keras.layers.LSTM(100))
+    model.add(tensorflow.keras.layers.Dense(1000, input_dim=6))
+    model.add(tensorflow.keras.layers.Dense(100))
+    model.add(tensorflow.keras.layers.Dense(10))
     model.add(tensorflow.keras.layers.Dense(1, activation='sigmoid'))
     model.compile(
         optimizer="adam",
@@ -66,9 +53,14 @@ def transform_data(data):
     with tft_beam.Context(temp_dir="temp/"):
         raw_data_metadata = dataset_metadata.DatasetMetadata(
             dataset_schema.from_feature_spec({
+                # earlies, middays and lates is when a slack message was sent in the day.
                 'earlies': tensorflow.FixedLenFeature([], tensorflow.int64),
                 'middays': tensorflow.FixedLenFeature([], tensorflow.int64),
                 'lates': tensorflow.FixedLenFeature([], tensorflow.int64),
+                # negative, positive and neutral is the sentiment of the emojis sent.
+                'negative': tensorflow.FixedLenFeature([], tensorflow.int64),
+                'positive': tensorflow.FixedLenFeature([], tensorflow.int64),
+                'neutral': tensorflow.FixedLenFeature([], tensorflow.int64),
             }))
 
         transformed_dataset, transform_fn = (
@@ -80,7 +72,10 @@ def transform_data(data):
     for trans in transformed_data:
         current = [trans["earlies_normalized"],
                    trans["middays_normalized"],
-                   trans["lates_normalized"]]
+                   trans["lates_normalized"],
+                   trans["negative_normalized"],
+                   trans["neutral_normalized"],
+                   trans["positive_normalized"]]
         retransformed_data.append(current)
     return array(retransformed_data)
 
@@ -91,20 +86,13 @@ def train(date=None, days=1):
 
     raw_x_data, y_data = DataFetcher.fetch_data(date, days=days)
 
-    x_data = list(map(process_slack_data, raw_x_data))
-    print(x_data)
+    print(raw_x_data)
     print(y_data)
 
-    # # TODO: Remove hardcoded test-data.
-    # x_data = [{'earlies': 10, 'middays': 20, 'lates': 25},
-    #           {'earlies': 50, 'middays': 70, 'lates': 49},
-    #           {'earlies': 112, 'middays': 99, 'lates': 109}]
-    # y_data = [0.2, 0.6, 0.9]
-    # # TODO: End of hardcoded test-data.
-    transformed_data = transform_data(x_data)
+    transformed_data = transform_data(raw_x_data)
 
     model = baseline_model()
-    model.fit(transformed_data, y_data, epochs=100)
+    model.fit(transformed_data, y_data, epochs=1000)
     return model
 
 
@@ -116,19 +104,20 @@ def main():
     # TODO: move all of this to amazon sagemaker
 
     start_date = datetime(2019, 7, 23, 22, 23, 29)
-    model = train(start_date, days=4)
+    model = train(start_date, days=10)
 
-    # raw_data = [{'earlies': 10, 'middays': 20, 'lates': 25},
-    #             {'earlies': 50, 'middays': 70, 'lates': 49},
-    #             {'earlies': 112, 'middays': 99, 'lates': 109}]
-
-    raw_data = [{'earlies': 113, 'middays': 56, 'lates': 87},
-                {'earlies': 22, 'middays': 38, 'lates': 23},
-                {'earlies': 67, 'middays': 83, 'lates': 19}]
+    raw_data = [{'earlies': 113, 'middays': 56, 'lates': 87, 'negative': 0, 'positive': 0,
+                 'neutral': 0},
+                {'earlies': 22, 'middays': 38, 'lates': 23, 'negative': 0, 'positive': 0,
+                 'neutral': 0},
+                {'earlies': 67, 'middays': 83, 'lates': 23, 'negative': 0, 'positive': 0,
+                 'neutral': 0},
+                {'earlies': 12, 'middays': 107, 'lates': 33, 'negative': 1, 'positive': 12,
+                 'neutral': 2}]
     data = transform_data(raw_data)
 
     prediction = predict(model, data)
-    print(prediction)  # Should print: [0.83333333, 1.0, 0.8]
+    print(prediction)  # Should print: [0.83333333, 1.0, 0.8, 1.0]
     # res = [0.83333333, 1.0, 0.8]
     # acc = model.evaluate(data, res)
 
