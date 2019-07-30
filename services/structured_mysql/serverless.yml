@@ -25,7 +25,7 @@ provider:
   region: eu-central-1
   runtime: python3.7
   memorySize: 1024
-  timeout: 30
+  timeout: 60
   stackTags:
     Project: ${self:custom.project}
   tags:
