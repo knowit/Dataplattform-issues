@@ -95,6 +95,7 @@ class DataFetcher:
         github_sql = "SELECT COUNT(*) as `count` FROM `GithubType` WHERE `timestamp`>%s and " \
                      "`timestamp` <%s"
         execute_sql_query("GithubType", github_sql)
+        # TODO: implement more features.
         #
         # event_sql = "SELECT `event_name`, `number_of_people`, `group` FROM `EventType` WHERE
         # `timestamp`>%s and `timestamp` <%s"

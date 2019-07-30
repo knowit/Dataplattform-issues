@@ -113,8 +113,6 @@ def predict(model, data):
 
 
 def main():
-    # TODO: move all of this to amazon sagemaker
-
     start_date = datetime(2019, 7, 23, 22, 23, 29)
     model = train(start_date, days=10)
 
@@ -131,8 +129,6 @@ def main():
 
     prediction = predict(model, data)
     print(prediction)  # Should print: [0.83333333, 1.0, 0.8, 0.8]
-    # res = [0.83333333, 1.0, 0.8]
-    # acc = model.evaluate(data, res)
 
 
 if __name__ == '__main__':
