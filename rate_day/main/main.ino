@@ -9,7 +9,7 @@ const int pin_btn2 = 18;
 
 const char* ssid = "";
 const char* password = "";
-const char* url = "...com/test/dataplattform_ingest/DayRatingType";
+const char* url = "...com/prod/dataplattform_ingest/DayRatingType";
 const char* ingest_api_key = "";
 
 void setup() {
@@ -67,7 +67,7 @@ void loop() {
             } else if (btn2) {
                 post += "1 ";
             }
-            post += "\}";
+            post += "}";
             Serial.println(post);
             int response = http.POST(post);
             digitalWrite(pin_b, LOW);

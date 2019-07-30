@@ -16,7 +16,7 @@ provider:
   region: eu-central-1
   runtime: python3.7
   memorySize: 1024
-  timeout: 15
+  timeout: 30
   apiKeys:
     - name: ${self:custom.project}-fetch_apikey
       value: ${self:custom.apikeys.fetch}
