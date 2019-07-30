@@ -125,12 +125,12 @@ def main():
          'neutral': 0, 'github_count': 10},
         {'weekday': 4, 'earlies': 67, 'middays': 83, 'lates': 23, 'negative': 0, 'positive': 0,
          'neutral': 0, 'github_count': 12},
-        {'weekday': 0, 'earlies': 12, 'middays': 107, 'lates': 51, 'negative': 1, 'positive': 12,
-         'neutral': 2, 'github_count': 5}]
+        {'weekday': 0, 'earlies': 12, 'middays': 107, 'lates': 78, 'negative': 1, 'positive': 15,
+         'neutral': 2, 'github_count': 11}]
     data = transform_data(raw_data)
 
     prediction = predict(model, data)
-    print(prediction)  # Should print: [0.83333333, 1.0, 0.8, 1.0]
+    print(prediction)  # Should print: [0.83333333, 1.0, 0.8, 0.8]
     # res = [0.83333333, 1.0, 0.8]
     # acc = model.evaluate(data, res)
 
