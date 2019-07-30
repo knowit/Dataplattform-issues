@@ -1,11 +1,16 @@
 import blog_poller
 import ubw_poller
 import traceback
+import yr_poller
 
 
 def lambda_handler(event, context):
     # This is a list of polling methods that should be run once every day.
-    pollings = [ubw_poller.poll, blog_poller.poll]
+    pollings = [
+        ubw_poller.poll,
+        blog_poller.poll,
+        yr_poller.poll,
+    ]
     errors = 0
     for poll in pollings:
         try:
