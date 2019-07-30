@@ -12,12 +12,14 @@ inserts that information into an aurora db.
 
 # These types will be used if no other types are provided.
 DEFAULT_TYPES = [
+    "DayRatingType",
     "EventRatingType",
     "EventType",
     "GithubType",
     "SlackType",
     "SlackReactionType",
     "UBWType",
+    "KnowitlabsType"
 ]
 
 # Assume running hourly by default. Request the last 1h10m of data.

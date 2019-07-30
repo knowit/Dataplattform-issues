@@ -25,7 +25,9 @@ provider:
   region: eu-central-1
   runtime: python3.7
   memorySize: 1024
-  timeout: 30
+  timeout: 60
+  stackTags:
+    Project: ${self:custom.project}
   tags:
     Project: ${self:custom.project}
 
@@ -55,7 +57,7 @@ functions:
       DATAPLATTFORM_AURORA_DB_NAME: ${self:custom.database_name}
       DATAPLATTFORM_AURORA_USER: ${self:custom.creds.user}
       DATAPLATTFORM_AURORA_PASSWORD: ${self:custom.creds.password}
-      DATAPLATTFORM_FETCH_APIKEY: ${ssm:dataplattform_mysql_fetch_apikey}
+      DATAPLATTFORM_FETCH_APIKEY: ${ssm:dataplattform_${self:custom.stage}_batch_job_apikey}
       DATAPLATTFORM_FETCH_URL:
         'Fn::ImportValue': ${self:custom.project}-get-docs-url
       DATAPLATTFORM_OAUTH_SLACK_TOKEN: ${ssm:dataplattform_slack_event_oauth}
