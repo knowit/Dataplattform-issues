@@ -114,3 +114,4 @@ venv.bak/
 **/node_modules/
 **/package-lock.json
 **/*.serverless_outputs.json
+**/temp/
