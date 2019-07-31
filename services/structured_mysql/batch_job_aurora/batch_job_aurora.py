@@ -19,7 +19,8 @@ DEFAULT_TYPES = [
     "SlackType",
     "SlackReactionType",
     "UBWType",
-    "KnowitlabsType"
+    "KnowitlabsType",
+    "YrType",
 ]
 
 # Assume running hourly by default. Request the last 1h10m of data.

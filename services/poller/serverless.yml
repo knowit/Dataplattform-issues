@@ -50,6 +50,7 @@ functions:
       UBW_TEMPLATE_ID: 2528
       UBW_URL: ${ssm:dataplattform_ubw_url}
       UBW_USERNAME: ${ssm:dataplattform_ubw_username}
+      DATAPLATTFORM_YR_LOCATION: 'Norway/Oslo/Oslo/Lakkegata'
     events:
       - schedule: rate(1 day)
 
