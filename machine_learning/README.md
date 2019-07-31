@@ -22,10 +22,10 @@ Som input har vi en del data som vi har samlet i dataplattformen, noen eksempler
     * AmazonSageMakerFullAccess
     * AmazonSSMReadOnlyAccess
     * AWSLambdaVPCAccessExecutionRole
-3. VPS
+3. VPC
     * OsloCloud
     * subnet: ON-LAN1
-    * security groups: ON-LAN, ON-PUBLIC, default
+    * security groups: ON-LAN
     * Under `Direct internet access` sjekk av `Disable — Access the internet through a VPC`
 4. Git repository: `https://github.com/knowit/Dataplattform.git`
 
