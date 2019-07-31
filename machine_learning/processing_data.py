@@ -7,6 +7,9 @@ class ProcessingData:
 
     @staticmethod
     def get_slack_to_unicode_dict():
+        """
+        :return: A dictionary with short_name (slack emojis) as keys and unicode as values.
+        """
         if ProcessingData.__slack_to_unicode_dict is None:
             f = open("emoji/emoji_data.json")
             emoji_data = json.loads(f.read())
@@ -23,6 +26,11 @@ class ProcessingData:
 
     @staticmethod
     def get_emoji_sentiment_dict():
+        """
+        :return: A dictionary with unicode as input and either "negative_emoji",
+        "neutral_emoji" or "positive_emoji"
+        as output.
+        """
         if ProcessingData.__emoji_sentiment_dict is None:
             f = open("emoji/emoji_sentiment_table.json")
             emoji_data = json.loads(f.read())
@@ -31,16 +39,19 @@ class ProcessingData:
             slack_to_unicode_dict = {}
 
             for emoji_sent in emoji_data:
-                negative_count = emoji_sent["negative"]
-                neutral_count = emoji_sent["neutral"]
-                positive_count = emoji_sent["positive"]
+                negative_emoji_count = emoji_sent["negative"]
+                neutral_emoji_count = emoji_sent["neutral"]
+                positive_emoji_count = emoji_sent["positive"]
 
-                if positive_count >= neutral_count and positive_count >= negative_count:
-                    emoji_highest = "positive"
-                elif neutral_count >= positive_count and neutral_count >= negative_count:
-                    emoji_highest = "neutral"
-                elif negative_count >= positive_count and negative_count >= neutral_count:
-                    emoji_highest = "negative"
+                if positive_emoji_count >= neutral_emoji_count and positive_emoji_count >= \
+                        negative_emoji_count:
+                    emoji_highest = "positive_emoji"
+                elif neutral_emoji_count >= positive_emoji_count and neutral_emoji_count >= \
+                        negative_emoji_count:
+                    emoji_highest = "neutral_emoji"
+                elif negative_emoji_count >= positive_emoji_count and \
+                        negative_emoji_count >= neutral_emoji_count:
+                    emoji_highest = "negative_emoji"
                 else:
                     raise Exception("This should never happen...")
                 unicode = emoji_sent["sequence"]
@@ -50,21 +61,26 @@ class ProcessingData:
 
     @staticmethod
     def process_slack_data(data):
-        earlies = 0
-        middays = 0
-        lates = 0
+        """
+        :param data: Data to be processed.
+        :return: A dictionary containing how many of the slack messages were written early in the
+        day, midday and late in the day.
+        """
+        early_slack_count = 0
+        midday_slack_count = 0
+        late_slack_count = 0
         for slack_data in data:
             time_of_day = slack_data["time_of_day"]
             if time_of_day == "early":
-                earlies += 1
+                early_slack_count += 1
             elif time_of_day == "midday":
-                middays += 1
+                midday_slack_count += 1
             elif time_of_day == "late":
-                lates += 1
+                late_slack_count += 1
         out = {
-            "earlies": earlies,
-            "middays": middays,
-            "lates": lates
+            "early_slack_count": early_slack_count,
+            "midday_slack_count": midday_slack_count,
+            "late_slack_count": late_slack_count
         }
 
         return out
@@ -86,7 +102,7 @@ class ProcessingData:
             this method is using the emoji-sentiment-table taken from
             https://github.com/dematerializer/emoji-sentiment/blob/master/res/emoji-sentiment-data.stable.json
             :param emoji_unicode: Unicode codepoint. example: 1f602
-            :return: either "negative", "neutral", "positive", or unknown
+            :return: either "negative_emoji", "neutral_emoji", "positive_emoji", or unknown
 
             """
             if emoji_unicode in ProcessingData.get_emoji_sentiment_dict():
@@ -94,9 +110,9 @@ class ProcessingData:
             return "unknown"
 
         out = {
-            "negative": 0,
-            "positive": 0,
-            "neutral": 0
+            "negative_emoji": 0,
+            "positive_emoji": 0,
+            "neutral_emoji": 0
         }
 
         for reaction_data in data:

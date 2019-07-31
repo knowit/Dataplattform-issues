@@ -41,6 +41,11 @@ class DataFetcher:
 
     @staticmethod
     def fetch_data(date_from, days=1):
+        """
+        :param date_from: From where do you want to start fetching data.
+        :param days: How many days of data do you want to fetch.
+        :return: Returns both x_data and labels for all the `days` number of days.
+        """
         date_to = date_from + timedelta(days=1)
         x_data_list = []
         label_list = []
@@ -60,16 +65,24 @@ class DataFetcher:
 
     @staticmethod
     def fetch_x_data(timestamp_from, timestamp_to):
-        # for a day.
+        """
+        :param timestamp_from: unix timestamp.
+        :param timestamp_to: unix timestamp.
+        :return: All the features for a specific day.
+        """
         results = {
             "weekday": DataFetcher.get_weekday(timestamp_to)
         }
 
         def execute_sql_query(data_type, sql_query):
+            """
+            :param data_type: Which data_type is this.
+            :param sql_query: The sql query string.
+            :return: Nothing, this just updates the results dictionary with more keys and values.
+            """
             cursor = DataFetcher.get_connection().cursor()
             cursor.execute(sql_query, (timestamp_from, timestamp_to))
             query_result = cursor.fetchall()
-            print(data_type, query_result)
             if len(query_result) > 0 and "timestamp" in query_result[0]:
                 for i in range(len(query_result)):
                     time_of_day = DataFetcher.timestamp_to_time_of_day(
@@ -109,6 +122,12 @@ class DataFetcher:
 
     @staticmethod
     def fetch_label(timestamp_from, timestamp_to):
+        """
+        :param timestamp_from: unix timestamp.
+        :param timestamp_to: unix timestamp.
+        :return: Either a number (float) between 0 and 1. or None if there was no ratings between
+        the timestamps.
+        """
         # In order to get the ratio in the range (0, 1) we add one, and divide by two.
         event_rating_sql = "select (((sum(button) / count(button)) + 1) / 2) as `ratio` from " \
                            "`DayRatingType` where `timestamp`>%s and `timestamp`<%s"
@@ -122,7 +141,7 @@ class DataFetcher:
     @staticmethod
     def timestamp_to_time_of_day(timestamp):
         """
-        :param timestamp:
+        :param timestamp: unix timestamp.
         :return: Either 'early', 'midday' or 'late'.
         """
         dt_object = datetime.fromtimestamp(timestamp)
@@ -136,5 +155,9 @@ class DataFetcher:
 
     @staticmethod
     def get_weekday(timestamp):
+        """
+        :param timestamp: unix timestamp.
+        :return: a number in the range [0, 6]. 0 is monday etc..
+        """
         dt_object = datetime.fromtimestamp(timestamp)
         return dt_object.weekday()
