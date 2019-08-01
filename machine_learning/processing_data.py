@@ -129,8 +129,12 @@ class ProcessingData:
 
     @staticmethod
     def process_github_data(data):
-        if len(data) == 0:
-            count = 0
+        return {"github_count": data["count"]}
+
+    @staticmethod
+    def process_event_rating_data(data):
+        if data["ratio"] is not None:
+            ratio = int(data["ratio"])
         else:
-            count = data[0]["count"]
-        return {"github_count": count}
+            ratio = 0
+        return {"event_rating_ratio": ratio}

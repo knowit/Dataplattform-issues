@@ -10,7 +10,8 @@ class DataFetcher:
     pre_processing_types = {
         "SlackType": ProcessingData.process_slack_data,
         "SlackReactionType": ProcessingData.process_slack_reaction_data,
-        "GithubType": ProcessingData.process_github_data
+        "GithubType": ProcessingData.process_github_data,
+        "EventRatingType": ProcessingData.process_event_rating_data
     }
 
     @staticmethod
@@ -74,26 +75,37 @@ class DataFetcher:
             "weekday": DataFetcher.get_weekday(timestamp_to)
         }
 
-        def execute_sql_query(data_type, sql_query):
+        def execute_sql_query(data_type, sql_query, only_one=False):
             """
             :param data_type: Which data_type is this.
             :param sql_query: The sql query string.
+            :param only_one: Only fetch one record.
             :return: Nothing, this just updates the results dictionary with more keys and values.
             """
             cursor = DataFetcher.get_connection().cursor()
             cursor.execute(sql_query, (timestamp_from, timestamp_to))
-            query_result = cursor.fetchall()
-            if len(query_result) > 0 and "timestamp" in query_result[0]:
-                for i in range(len(query_result)):
-                    time_of_day = DataFetcher.timestamp_to_time_of_day(
-                        query_result[i]["timestamp"])
-                    query_result[i]["time_of_day"] = time_of_day
-                    del query_result[i]["timestamp"]
+            if only_one:
+                query_result = cursor.fetchone()
+            else:
+                query_result = cursor.fetchall()
+                if len(query_result) > 0 and "timestamp" in query_result[0]:
+                    for i in range(len(query_result)):
+                        time_of_day = DataFetcher.timestamp_to_time_of_day(
+                            query_result[i]["timestamp"])
+                        query_result[i]["time_of_day"] = time_of_day
+                        del query_result[i]["timestamp"]
             if data_type in DataFetcher.pre_processing_types:
                 # If this data needs more processing then we can do that here.
                 query_result = DataFetcher.pre_processing_types[data_type](query_result)
 
             results.update(query_result)
+
+        # TODO: Ideas for more features:
+        #  * Which slack channel was talked in.
+        #  * Weather
+        #  * how many hours used on events this week. (This might be hard because they are quite
+        #  delayed).
+        #  * train and tram delays.
 
         # slack_sql = "SELECT COUNT(*) as `count`, `channel_name` FROM `SlackType` WHERE " \
         #             "`timestamp`>%s and `timestamp` <%s and `channel_name` IS NOT NULL GROUP" \
@@ -101,22 +113,19 @@ class DataFetcher:
         slack_sql = "SELECT `timestamp` FROM `SlackType` WHERE `timestamp`>%s AND `timestamp` <%s"
         execute_sql_query("SlackType", slack_sql)
 
-        slack_reactions_sql = "SELECT `reaction`, count(*) as `count` FROM `SlackReactionType` " \
+        slack_reactions_sql = "SELECT `reaction`, count(*) AS `count` FROM `SlackReactionType` " \
                               "WHERE `timestamp`>%s AND `timestamp` <%s GROUP BY `reaction`"
         execute_sql_query("SlackReactionType", slack_reactions_sql)
 
-        github_sql = "SELECT COUNT(*) as `count` FROM `GithubType` WHERE `timestamp`>%s and " \
+        github_sql = "SELECT COUNT(*) AS `count` FROM `GithubType` WHERE `timestamp`>%s AND " \
                      "`timestamp` <%s"
-        execute_sql_query("GithubType", github_sql)
-        # TODO: implement more features.
-        #
-        # event_sql = "SELECT `event_name`, `number_of_people`, `group` FROM `EventType` WHERE
-        # `timestamp`>%s and `timestamp` <%s"
-        # execute_sql_query("EventType", event_sql)
-        #
-        # event_rating_sql = "Select `event_name`, sum(button) / count(button) as `ratio` from
-        # `EventRatingType` where `timestamp`>%s and `timestamp`<%s GROUP BY `event_name`"
-        # execute_sql_query("EventRatingType", event_rating_sql)
+        execute_sql_query("GithubType", github_sql, only_one=True)
+
+        # This is not grouping by each event. This query calculates the voting ratio of all the
+        # events that happened today.
+        event_rating_sql = "SELECT (sum(button) / count(button))*1000 AS `ratio` FROM " \
+                           "`EventRatingType` WHERE `timestamp`>%s AND `timestamp`<%s"
+        execute_sql_query("EventRatingType", event_rating_sql, only_one=True)
 
         return results
 

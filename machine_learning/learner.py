@@ -25,7 +25,8 @@ def preprocess(data):
         "neutral_emoji_normalized": neutral_emoji_normalized,
         "positive_emoji_normalized": positive_emoji_normalized,
         "github_count_normalized": github_count_normalized,
-        "weekday": data["weekday"]
+        "weekday": data["weekday"],
+        "event_rating_ratio": data["event_rating_ratio"]
 
     }
     return out
@@ -63,10 +64,7 @@ def transform_data(data):
                 'midday_slack_count': tensorflow.FixedLenFeature([], tensorflow.int64),
                 'late_slack_count': tensorflow.FixedLenFeature([], tensorflow.int64),
                 # negative_emoji, positive_emoji and neutral_emoji is the sentiment
-                # of
-                # the
-                # emojis
-                # sent.
+                # of the emojis sent.
                 'negative_emoji': tensorflow.FixedLenFeature([], tensorflow.int64),
                 'positive_emoji': tensorflow.FixedLenFeature([], tensorflow.int64),
                 'neutral_emoji': tensorflow.FixedLenFeature([], tensorflow.int64),
@@ -74,6 +72,7 @@ def transform_data(data):
                 'github_count': tensorflow.FixedLenFeature([], tensorflow.int64),
                 # weekday
                 'weekday': tensorflow.FixedLenFeature([], tensorflow.int64),
+                'event_rating_ratio': tensorflow.FixedLenFeature([], tensorflow.int64),
             }))
 
         transformed_dataset, transform_fn = (
@@ -90,7 +89,8 @@ def transform_data(data):
                    trans["neutral_emoji_normalized"],
                    trans["positive_emoji_normalized"],
                    trans["github_count_normalized"],
-                   trans["weekday"]]
+                   trans["weekday"],
+                   trans["event_rating_ratio"]]
 
         retransformed_data.append(current)
 
@@ -123,15 +123,20 @@ def main():
 
     raw_data = [
         {'weekday': 2, 'early_slack_count': 113, 'midday_slack_count': 56, 'late_slack_count': 87,
-         'negative_emoji': 0, 'positive_emoji': 0, 'neutral_emoji': 0, 'github_count': 6},
+         'negative_emoji': 0, 'positive_emoji': 0, 'neutral_emoji': 0, 'github_count': 6,
+         'event_rating_ratio': 0},
         {'weekday': 3, 'early_slack_count': 22, 'midday_slack_count': 38, 'late_slack_count': 23,
-         'negative_emoji': 0, 'positive_emoji': 0, 'neutral_emoji': 0, 'github_count': 10},
+         'negative_emoji': 0, 'positive_emoji': 0, 'neutral_emoji': 0, 'github_count': 10,
+         'event_rating_ratio': 0},
         {'weekday': 4, 'early_slack_count': 67, 'midday_slack_count': 83, 'late_slack_count': 23,
-         'negative_emoji': 0, 'positive_emoji': 0, 'neutral_emoji': 0, 'github_count': 12},
+         'negative_emoji': 0, 'positive_emoji': 0, 'neutral_emoji': 0, 'github_count': 12,
+         'event_rating_ratio': 0},
         {'weekday': 0, 'early_slack_count': 12, 'midday_slack_count': 107, 'late_slack_count': 78,
-         'negative_emoji': 1, 'positive_emoji': 15, 'neutral_emoji': 2, 'github_count': 11},
+         'negative_emoji': 1, 'positive_emoji': 15, 'neutral_emoji': 2, 'github_count': 11,
+         'event_rating_ratio': 0},
         {'weekday': 1, 'early_slack_count': 55, 'midday_slack_count': 117, 'late_slack_count': 111,
-         'negative_emoji': 0, 'positive_emoji': 29, 'neutral_emoji': 3, 'github_count': 15}]
+         'negative_emoji': 0, 'positive_emoji': 29, 'neutral_emoji': 3, 'github_count': 15,
+         'event_rating_ratio': 0}]
     data = transform_data(raw_data)
 
     prediction = predict(model, data)
