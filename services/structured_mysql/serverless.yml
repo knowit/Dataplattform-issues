@@ -17,7 +17,7 @@ custom:
     useDownloadCache: true
     useStaticCache: true
   output:
-    file: ../integration_tests/structured_mysql.serverless_outputs.json
+    file: ../integration_tests/structured_mysql.serverless_outputs_${self:custom.stage}.json
 
 provider:
   name: aws

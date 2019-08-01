@@ -8,7 +8,7 @@ custom:
     fetch: ${ssm:dataplattform_${self:custom.stage}_fetch_apikey}
     batch_job: ${ssm:dataplattform_${self:custom.stage}_batch_job_apikey}
   output:
-    file: ../integration_tests/fetch.serverless_outputs.json
+    file: ../integration_tests/fetch.serverless_outputs_${self:custom.stage}.json
 
 provider:
   name: aws

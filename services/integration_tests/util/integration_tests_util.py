@@ -2,8 +2,9 @@ import json
 import urllib.request
 
 
-def read_serverless_output(service):
-    f = open(f"{service}.serverless_outputs.json")
+def read_serverless_output(service, stage="test"):
+    # TODO run against dev by default, run against test if running in travis?
+    f = open(f"{service}.serverless_outputs_{stage}.json")
     data = json.loads(f.read())
     f.close()
     return data
