@@ -3,6 +3,7 @@ import xmltodict
 import urllib.request
 import urllib.parse
 from poller_util import PollerUtil
+from datetime import datetime
 
 UBW_TYPE = "UBWType"
 
@@ -162,11 +163,12 @@ def insert_new_ubw_data(doc):
     return None
 
 
-def should_upload_ingest(doc, last_inserted_doc):
+def should_upload_ingest(doc, last_inserted_doc, dt_now=None):
     """
     :param doc: The doc that's about to be evaluated
     :param last_inserted_doc: This is the last inserted document. This is what we need to compare
     to.
+    :param dt_now: Current datetime, this should only be set when testing.
     :return: either True if this doc should be uploaded or False if it should be skipped.
     """
     # The last document doesn't have either or these and should be skipped.
@@ -175,6 +177,19 @@ def should_upload_ingest(doc, last_inserted_doc):
 
     # Only the "B" documents are completed, the rest should be ignored.
     if doc["tab"] != "B":
+        return False
+
+    # You should only uploads docs that are older than 4 weeks.
+    year, week = doc["reg_period"][0:4], doc["reg_period"][4:]
+    number_of_weeks = int(year) * 52 + int(week)
+
+    if dt_now is None:
+        dt_now = datetime.now()
+
+    cur_year, cur_week = dt_now.year, dt_now.isocalendar()[1]
+    current_number_of_weeks = cur_year * 52 + cur_week
+
+    if number_of_weeks > current_number_of_weeks - 4:
         return False
 
     # You should always upload if there is no previous inserted doc.
