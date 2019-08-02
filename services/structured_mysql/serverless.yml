@@ -164,6 +164,8 @@ resources:
       Value: ${self:custom.database_port}
     auroraDBName:
       Value: ${self:custom.database_name}
+    batchJobLambda:
+      Value: ${self:custom.batch_job_lambda}
 
 
 plugins:

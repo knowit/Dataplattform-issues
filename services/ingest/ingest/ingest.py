@@ -1,3 +1,4 @@
+import base64
 import os
 
 import boto3
@@ -14,10 +15,13 @@ def handler(event, context):
 
     data_type = event["pathParameters"]["type"]
     data = (event["body"])
-    timestamp = insert_doc(table, data_type, data=data)
+    timestamp, timestamp_random = insert_doc(table, data_type, data=data)
     return {
         'statusCode': 200,
-        'body': json.dumps({"timestamp": timestamp})
+        'body': json.dumps({
+            "timestamp": timestamp,
+            "id": base64.b64encode(timestamp_random).decode("utf-8")
+        })
     }
 
 
@@ -29,9 +33,10 @@ def insert_doc(table, type, data=None, timestamp=None):
     if timestamp is None:
         timestamp = int(dt.now().timestamp())
 
+    timestamp_random = tr.get_timestamp_random()
     item = {
         "type": type,
-        "timestamp_random": tr.get_timestamp_random(),
+        "timestamp_random": timestamp_random,
         "timestamp": timestamp
     }
     if data is not None:
@@ -41,4 +46,4 @@ def insert_doc(table, type, data=None, timestamp=None):
         Item=item
     )
 
-    return timestamp
+    return timestamp, timestamp_random
