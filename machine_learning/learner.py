@@ -16,6 +16,7 @@ def preprocess(data):
     neutral_emoji_normalized = tft.scale_to_0_1(data["neutral_emoji"])
     positive_emoji_normalized = tft.scale_to_0_1(data["positive_emoji"])
     github_count_normalized = tft.scale_to_0_1(data["github_count"])
+    event_rating_normalized = tft.scale_to_0_1(data["event_rating_ratio"])
 
     out = {
         "early_slack_count_normalized": early_slack_count_normalized,
@@ -26,7 +27,7 @@ def preprocess(data):
         "positive_emoji_normalized": positive_emoji_normalized,
         "github_count_normalized": github_count_normalized,
         "weekday": data["weekday"],
-        "event_rating_ratio": data["event_rating_ratio"]
+        "event_rating_normalized": event_rating_normalized
 
     }
     return out
@@ -90,7 +91,7 @@ def transform_data(data):
                    trans["positive_emoji_normalized"],
                    trans["github_count_normalized"],
                    trans["weekday"],
-                   trans["event_rating_ratio"]]
+                   trans["event_rating_normalized"]]
 
         retransformed_data.append(current)
 
@@ -119,7 +120,7 @@ def predict(model, data):
 
 def main():
     start_date = datetime(2019, 7, 23, 22, 23, 29)
-    model = train(start_date, days=10)
+    model = train(start_date, days=15)
 
     raw_data = [
         {'weekday': 2, 'early_slack_count': 113, 'midday_slack_count': 56, 'late_slack_count': 87,
@@ -136,11 +137,19 @@ def main():
          'event_rating_ratio': 0},
         {'weekday': 1, 'early_slack_count': 55, 'midday_slack_count': 117, 'late_slack_count': 111,
          'negative_emoji': 0, 'positive_emoji': 29, 'neutral_emoji': 3, 'github_count': 15,
+         'event_rating_ratio': 0},
+        {'weekday': 2, 'early_slack_count': 78, 'midday_slack_count': 126, 'late_slack_count': 117,
+         'negative_emoji': 2, 'positive_emoji': 140, 'neutral_emoji': 6, 'github_count': 7,
+         'event_rating_ratio': 0},
+        {'weekday': 3, 'early_slack_count': 42, 'midday_slack_count': 218, 'late_slack_count': 130,
+         'negative_emoji': 3, 'positive_emoji': 40, 'neutral_emoji': 4, 'github_count': 5,
          'event_rating_ratio': 0}]
     data = transform_data(raw_data)
 
     prediction = predict(model, data)
-    print(prediction)  # Should print: [0.83333333, 1.0, 0.8, 0.8, 0.96153846]
+
+    # Should print: 0.83333333, 1.0, 0.8, 0.8, 0.96153846, 0.73333333, 0.96153846
+    print(prediction)
 
 
 if __name__ == '__main__':
