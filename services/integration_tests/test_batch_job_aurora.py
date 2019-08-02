@@ -9,30 +9,41 @@ import pymysql
 MYSQL_CONFIG = util.read_serverless_output("structured_mysql")
 INGEST_CONFIG = util.read_serverless_output("ingest")
 
+ingest_apikey = INGEST_CONFIG["TravisIngestKey"]
+
 
 def test_dayratingtype_batch():
-    ingest_url = INGEST_CONFIG["IngestURL"] + "DayRatingType"
-    ingest_apikey = INGEST_CONFIG["TravisIngestKey"]
-
     body = json.dumps({
         "button": -1
     })
+    id, timestamp = ingest("DayRatingType", body)
+
+    batch_job_response = invoke_batch_job("DayRatingType", timestamp_from=timestamp)
+    assert batch_job_response["StatusCode"] == 200
+
+    row = get_single_row("DayRatingType", id)
+    assert row["timestamp"] == timestamp
+    assert row["button"] == -1
+
+
+def ingest(type: str, body: str) -> (str, int):
+    ingest_url = INGEST_CONFIG["IngestURL"] + type
     response_code, response_body = util.post_to_api(body, ingest_url, apikey=ingest_apikey)
     assert response_code == 200
     assert "timestamp" in response_body
     assert "id" in response_body
     timestamp = int(response_body["timestamp"])
     id = response_body["id"]
-    response = invoke_batch_job("DayRatingType", timestamp_from=timestamp)
-    assert response["StatusCode"] == 200
+    return id, timestamp
 
+
+def get_single_row(type, id):
     with get_mysql_cursor() as cursor:
-        sql = "SELECT * FROM DayRatingType WHERE id = %s;"
+        sql = f"SELECT * FROM {type} WHERE id = %s;"
         n_results = cursor.execute(sql, [id])
         assert n_results == 1
         row = cursor.fetchone()
-        assert row["timestamp"] == timestamp
-        assert row["button"] == -1
+        return row
 
 
 def invoke_batch_job(type, timestamp_from=None, timestamp_to=None):
