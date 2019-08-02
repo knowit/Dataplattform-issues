@@ -1,11 +1,15 @@
 from datetime import datetime
 import tensorflow
 import tensorflow_transform as tft
+import tensorflow.contrib.eager as tfe
 import tensorflow_transform.beam as tft_beam
 from data_fetcher import DataFetcher
 from numpy import array
 from tensorflow_transform.tf_metadata import dataset_metadata
 from tensorflow_transform.tf_metadata import dataset_schema
+from sklearn.model_selection import LeaveOneOut, KFold
+
+tensorflow.enable_eager_execution()
 
 
 def preprocess(data):
@@ -106,6 +110,24 @@ def transform_data(data):
     return array(retransformed_data)
 
 
+def make_dataset(X_data, y_data, n_splits):
+    """
+    :param X_data: All the x_data as a numpy array
+    :param y_data: All the y_data as a numpy array
+    :param n_splits: How many splits
+    :return: Performs k-fold cross validation and returns a generator for x_data, y_data,
+    x_train and y_train.
+    """
+    def gen():
+        for train_index, test_index in KFold(n_splits).split(X_data):
+            X_train, X_test = X_data[train_index], X_data[test_index]
+            y_train, y_test = y_data[train_index], y_data[test_index]
+            yield X_train, y_train, X_test, y_test
+
+    return tensorflow.data.Dataset.from_generator(gen, (
+        tensorflow.float64, tensorflow.float64, tensorflow.float64, tensorflow.float64))
+
+
 def train(date=None, days=1):
     if date is None:
         date = datetime.now()
@@ -115,10 +137,18 @@ def train(date=None, days=1):
     print(raw_x_data)
     print(y_data)
 
-    transformed_data = transform_data(raw_x_data)
-    print(transformed_data)
+    raw_x_data = array(raw_x_data)
+    y_data = array(y_data)
+
+    x_data = transform_data(raw_x_data)
+    print(x_data)
     model = baseline_model()
-    model.fit(transformed_data, y_data, epochs=1000)
+
+    n_splits = 5
+    dataset = make_dataset(x_data, y_data, n_splits)
+    for X_train, y_train, X_test, y_test in tfe.Iterator(dataset):
+        model.fit(X_train, y_train, epochs=1000)
+        model.evaluate(X_test, y_test)
     return model
 
 
