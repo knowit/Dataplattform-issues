@@ -17,6 +17,8 @@ def preprocess(data):
     positive_emoji_normalized = tft.scale_to_0_1(data["positive_emoji"])
     github_count_normalized = tft.scale_to_0_1(data["github_count"])
     event_rating_normalized = tft.scale_to_0_1(data["event_rating_ratio"])
+    temperature_normalized = tft.scale_to_0_1(data["temperature"])
+    precipitation_normalized = tft.scale_to_0_1(data["precipitation"])
 
     out = {
         "early_slack_count_normalized": early_slack_count_normalized,
@@ -27,7 +29,9 @@ def preprocess(data):
         "positive_emoji_normalized": positive_emoji_normalized,
         "github_count_normalized": github_count_normalized,
         "weekday": data["weekday"],
-        "event_rating_normalized": event_rating_normalized
+        "event_rating_normalized": event_rating_normalized,
+        "temperature_normalized": temperature_normalized,
+        "precipitation_normalized": precipitation_normalized
 
     }
     return out
@@ -74,6 +78,8 @@ def transform_data(data):
                 # weekday
                 'weekday': tensorflow.FixedLenFeature([], tensorflow.int64),
                 'event_rating_ratio': tensorflow.FixedLenFeature([], tensorflow.int64),
+                'temperature': tensorflow.FixedLenFeature([], tensorflow.int64),
+                'precipitation': tensorflow.FixedLenFeature([], tensorflow.int64),
             }))
 
         transformed_dataset, transform_fn = (
@@ -91,7 +97,9 @@ def transform_data(data):
                    trans["positive_emoji_normalized"],
                    trans["github_count_normalized"],
                    trans["weekday"],
-                   trans["event_rating_normalized"]]
+                   trans["event_rating_normalized"],
+                   trans["temperature_normalized"],
+                   trans["precipitation_normalized"]]
 
         retransformed_data.append(current)
 
@@ -125,25 +133,25 @@ def main():
     raw_data = [
         {'weekday': 2, 'early_slack_count': 113, 'midday_slack_count': 56, 'late_slack_count': 87,
          'negative_emoji': 0, 'positive_emoji': 0, 'neutral_emoji': 0, 'github_count': 6,
-         'event_rating_ratio': 0},
+         'event_rating_ratio': 0, 'temperature': 0, 'precipitation': 0},
         {'weekday': 3, 'early_slack_count': 22, 'midday_slack_count': 38, 'late_slack_count': 23,
          'negative_emoji': 0, 'positive_emoji': 0, 'neutral_emoji': 0, 'github_count': 10,
-         'event_rating_ratio': 0},
+         'event_rating_ratio': 0, 'temperature': 0, 'precipitation': 0},
         {'weekday': 4, 'early_slack_count': 67, 'midday_slack_count': 83, 'late_slack_count': 23,
          'negative_emoji': 0, 'positive_emoji': 0, 'neutral_emoji': 0, 'github_count': 12,
-         'event_rating_ratio': 0},
+         'event_rating_ratio': 0, 'temperature': 0, 'precipitation': 0},
         {'weekday': 0, 'early_slack_count': 12, 'midday_slack_count': 107, 'late_slack_count': 78,
          'negative_emoji': 1, 'positive_emoji': 15, 'neutral_emoji': 2, 'github_count': 11,
-         'event_rating_ratio': 0},
+         'event_rating_ratio': 0, 'temperature': 0, 'precipitation': 0},
         {'weekday': 1, 'early_slack_count': 55, 'midday_slack_count': 117, 'late_slack_count': 111,
          'negative_emoji': 0, 'positive_emoji': 29, 'neutral_emoji': 3, 'github_count': 15,
-         'event_rating_ratio': 0},
+         'event_rating_ratio': 0, 'temperature': 0, 'precipitation': 0},
         {'weekday': 2, 'early_slack_count': 78, 'midday_slack_count': 126, 'late_slack_count': 117,
          'negative_emoji': 2, 'positive_emoji': 140, 'neutral_emoji': 6, 'github_count': 7,
-         'event_rating_ratio': 0},
+         'event_rating_ratio': 0, 'temperature': 164, 'precipitation': 0},
         {'weekday': 3, 'early_slack_count': 42, 'midday_slack_count': 218, 'late_slack_count': 130,
          'negative_emoji': 3, 'positive_emoji': 40, 'neutral_emoji': 4, 'github_count': 5,
-         'event_rating_ratio': 0}]
+         'event_rating_ratio': 0, 'temperature': 201, 'precipitation': 0}]
     data = transform_data(raw_data)
 
     prediction = predict(model, data)

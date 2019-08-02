@@ -11,7 +11,8 @@ class DataFetcher:
         "SlackType": ProcessingData.process_slack_data,
         "SlackReactionType": ProcessingData.process_slack_reaction_data,
         "GithubType": ProcessingData.process_github_data,
-        "EventRatingType": ProcessingData.process_event_rating_data
+        "EventRatingType": ProcessingData.process_event_rating_data,
+        "YrType": ProcessingData.process_weather_data
     }
 
     @staticmethod
@@ -126,6 +127,13 @@ class DataFetcher:
         event_rating_sql = "SELECT (sum(button) / count(button))*1000 AS `ratio` FROM " \
                            "`EventRatingType` WHERE `timestamp`>%s AND `timestamp`<%s"
         execute_sql_query("EventRatingType", event_rating_sql, only_one=True)
+
+        # Because I want all the numbers as an int I multiply them by 10 and 100 here.
+        # Before I later convert it to int.
+        yr_sql = "SELECT 10 * (sum(`temperature`)/count(`temperature`)) AS `temp`, " \
+                 "100 * (sum(`precipitation`)/count(`precipitation`)) AS `prec` FROM `YrType` " \
+                 "WHERE `timestamp`>%s AND `timestamp`<%s"
+        execute_sql_query("YrType", yr_sql, only_one=True)
 
         return results
 

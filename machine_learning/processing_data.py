@@ -138,3 +138,16 @@ class ProcessingData:
         else:
             ratio = 0
         return {"event_rating_ratio": ratio}
+
+    @staticmethod
+    def process_weather_data(data):
+        if data["temp"] is not None:
+            temp = int(data["temp"])
+        else:
+            temp = 0
+
+        if data["prec"] is not None:
+            prec = int(data["prec"])
+        else:
+            prec = 0
+        return {"temperature": temp, "precipitation": prec}
