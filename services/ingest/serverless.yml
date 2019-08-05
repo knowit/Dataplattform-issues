@@ -22,7 +22,6 @@ provider:
   runtime: python3.7
   memorySize: 1024
   timeout: 5
-  role: arn:aws:iam::275823250475:role/dataplattform_basic_lambda #TODO set up roles using serverless
   apiKeys:
     - name: ${self:custom.project}-ingest-key
     - name: ${self:custom.project}-slack_ingest-apikey
@@ -72,6 +71,7 @@ functions:
     handler: slack_ingest/slack_ingest.handler
     name: ${self:custom.slack_ingest_lambda}
     description: Slack webhook endpoint
+    role: ingestMiddleManRole
     layers:
       - arn:aws:lambda:eu-central-1:275823250475:layer:Dataplattform-prod-slack_signature_validator:1
     package:
@@ -95,6 +95,7 @@ functions:
     handler: github_ingest/github_ingest.handler
     name: ${self:custom.github_ingest_lambda}
     description: Github webhook endpoint
+    role: ingestMiddleManRole
     package:
       include:
         - 'github_ingest/*.py'
@@ -143,6 +144,20 @@ resources:
                     - dynamodb:PutItem
                   Resource:
                     - 'Fn::ImportValue': ${self:custom.project}-dynamodb-rawtable-arn
+    ingestMiddleManRole:
+      Type: AWS::IAM::Role
+      Properties:
+        RoleName: ${self:custom.project}-MiddleManIngestRole
+        AssumeRolePolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Principal:
+                Service:
+                  - lambda.amazonaws.com
+              Action: sts:AssumeRole
+        ManagedPolicyArns:
+          - 'arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole'
   Outputs:
     IngestURL:
       Description: "Ingest URL"
