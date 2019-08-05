@@ -12,7 +12,8 @@ class DataFetcher:
         "SlackReactionType": ProcessingData.process_slack_reaction_data,
         "GithubType": ProcessingData.process_github_data,
         "EventRatingType": ProcessingData.process_event_rating_data,
-        "YrType": ProcessingData.process_weather_data
+        "YrType": ProcessingData.process_weather_data,
+        "SlackNegativeChannelsType": ProcessingData.process_slack_negative_data
     }
 
     @staticmethod
@@ -76,15 +77,17 @@ class DataFetcher:
             "weekday": DataFetcher.get_weekday(timestamp_to)
         }
 
-        def execute_sql_query(data_type, sql_query, only_one=False):
+        def execute_sql_query(data_type, sql_query, only_one=False,
+                              sql_params=(timestamp_from, timestamp_to)):
             """
             :param data_type: Which data_type is this.
             :param sql_query: The sql query string.
             :param only_one: Only fetch one record.
+            :param sql_params: The parameters used to swap out %s in the sql query.
             :return: Nothing, this just updates the results dictionary with more keys and values.
             """
             cursor = DataFetcher.get_connection().cursor()
-            cursor.execute(sql_query, (timestamp_from, timestamp_to))
+            cursor.execute(sql_query, sql_params)
             if only_one:
                 query_result = cursor.fetchone()
             else:
@@ -134,6 +137,21 @@ class DataFetcher:
                  "100 * (sum(`precipitation`)/count(`precipitation`)) AS `prec` FROM `YrType` " \
                  "WHERE `timestamp`>%s AND `timestamp`<%s"
         execute_sql_query("YrType", yr_sql, only_one=True)
+
+        # Fetches the ratio between number of messages sent in negative channels against the
+        # messages sent in every channel. (And multiply it by 1000 because we want it as an int
+        # later.
+        negative_slack_sql = """
+            SELECT 1000 * (count(*) / `all`.`total_size`) AS `ratio`
+            FROM `SlackType`
+            JOIN (
+                SELECT count(*) AS `total_size`
+                FROM `SlackType`
+                WHERE `timestamp`>%s AND `timestamp`<%s
+            ) `all`
+            WHERE (`channel_name` IN ("rant", "ubw") AND `timestamp`>%s AND `timestamp`<%s)"""
+        execute_sql_query("SlackNegativeChannelsType", negative_slack_sql, only_one=True,
+                          sql_params=(timestamp_from, timestamp_to) * 2)
 
         return results
 

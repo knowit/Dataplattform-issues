@@ -151,3 +151,12 @@ class ProcessingData:
         else:
             prec = 0
         return {"temperature": temp, "precipitation": prec}
+
+    @staticmethod
+    def process_slack_negative_data(data):
+        if data["ratio"] is not None:
+            ratio = int(data["ratio"])
+        else:
+            ratio = 0
+        return {"slack_negative_ratio": ratio}
+
