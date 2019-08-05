@@ -129,8 +129,34 @@ class ProcessingData:
 
     @staticmethod
     def process_github_data(data):
-        if len(data) == 0:
-            count = 0
+        return {"github_count": data["count"]}
+
+    @staticmethod
+    def process_event_rating_data(data):
+        if data["ratio"] is not None:
+            ratio = int(data["ratio"])
         else:
-            count = data[0]["count"]
-        return {"github_count": count}
+            ratio = 0
+        return {"event_rating_ratio": ratio}
+
+    @staticmethod
+    def process_weather_data(data):
+        if data["temp"] is not None:
+            temp = int(data["temp"])
+        else:
+            temp = 0
+
+        if data["prec"] is not None:
+            prec = int(data["prec"])
+        else:
+            prec = 0
+        return {"temperature": temp, "precipitation": prec}
+
+    @staticmethod
+    def process_slack_negative_data(data):
+        if data["ratio"] is not None:
+            ratio = int(data["ratio"])
+        else:
+            ratio = 0
+        return {"slack_negative_ratio": ratio}
+
