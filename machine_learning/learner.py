@@ -188,7 +188,6 @@ def main():
          'event_rating_ratio': 0, 'temperature': 164, 'precipitation': 0,
          'slack_negative_ratio': 28}]
 
-
     data = transform_data(raw_data)
 
     prediction = predict(model, data)

@@ -106,8 +106,10 @@ class DataFetcher:
         slack_sql = "SELECT `timestamp` FROM `SlackType` WHERE `timestamp`>%s AND `timestamp` <%s"
         execute_sql_and_process(ProcessingData.process_slack_data, slack_sql)
 
-        slack_reactions_sql = "SELECT `reaction`, count(*) AS `count` FROM `SlackReactionType` " \
-                              "WHERE `timestamp`>%s AND `timestamp` <%s GROUP BY `reaction`"
+        slack_reactions_sql = "SELECT `reaction`, count(*) AS `count`, `positive_ratio`, " \
+                              "`neutral_ratio`, `negative_ratio` FROM `SlackReactionType` WHERE " \
+                              "`timestamp`>%s AND `timestamp` <%s AND `positive_ratio` IS " \
+                              "NOT NULL GROUP BY `reaction`"
         execute_sql_and_process(ProcessingData.process_slack_reaction_data, slack_reactions_sql)
 
         github_sql = "SELECT COUNT(*) AS `count` FROM `GithubType` WHERE `timestamp`>%s AND " \
