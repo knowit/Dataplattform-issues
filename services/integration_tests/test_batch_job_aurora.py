@@ -3,8 +3,7 @@ import json
 import boto3
 import integration_tests_util as util
 from datetime import datetime as dt
-
-import pymysql
+from integration_tests_util import IntegrationTestUtil
 
 MYSQL_CONFIG = util.read_serverless_output("structured_mysql")
 INGEST_CONFIG = util.read_serverless_output("ingest")
@@ -99,7 +98,7 @@ def ingest(type: str, body: str) -> (str, int):
 
 
 def get_single_row(type, id):
-    with get_mysql_cursor() as cursor:
+    with IntegrationTestUtil.get_mysql_cursor() as cursor:
         sql = f"SELECT * FROM {type} WHERE id = %s;"
         n_results = cursor.execute(sql, [id])
         assert n_results == 1
@@ -120,7 +119,7 @@ def invoke_batch_job(type, timestamp_from=None, timestamp_to=None):
         "timestamp_from": timestamp_from,
         "timestamp_to": timestamp_to
     }
-    client = boto3.client('lambda')
+    client = boto3.client('lambda', region_name=MYSQL_CONFIG["region"])
     response = client.invoke(
         FunctionName=MYSQL_CONFIG["batchJobLambda"],
         LogType='None',
@@ -131,13 +130,3 @@ def invoke_batch_job(type, timestamp_from=None, timestamp_to=None):
     return response
 
 
-def get_mysql_cursor():
-    connection = pymysql.connect(
-        host=MYSQL_CONFIG["auroraClusterROEndpoint"],
-        port=int(MYSQL_CONFIG["auroraDBPort"]),
-        user=MYSQL_CONFIG["auroraDBUser"],
-        password=MYSQL_CONFIG["auroraDBPassword"],
-        db=MYSQL_CONFIG["auroraDBName"],
-        charset='utf8mb4',
-        cursorclass=pymysql.cursors.DictCursor)
-    return connection

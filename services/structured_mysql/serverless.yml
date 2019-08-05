@@ -166,6 +166,8 @@ resources:
       Value: ${self:custom.database_name}
     batchJobLambda:
       Value: ${self:custom.batch_job_lambda}
+    region:
+      Value: ${self:provider.region}
 
 
 plugins:
