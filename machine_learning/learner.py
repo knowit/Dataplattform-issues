@@ -1,11 +1,15 @@
 from datetime import datetime
 import tensorflow
 import tensorflow_transform as tft
+import tensorflow.contrib.eager as tfe
 import tensorflow_transform.beam as tft_beam
 from data_fetcher import DataFetcher
 from numpy import array
 from tensorflow_transform.tf_metadata import dataset_metadata
 from tensorflow_transform.tf_metadata import dataset_schema
+from sklearn.model_selection import KFold
+
+tensorflow.enable_eager_execution()
 
 
 def preprocess(data):
@@ -16,6 +20,10 @@ def preprocess(data):
     neutral_emoji_normalized = tft.scale_to_0_1(data["neutral_emoji"])
     positive_emoji_normalized = tft.scale_to_0_1(data["positive_emoji"])
     github_count_normalized = tft.scale_to_0_1(data["github_count"])
+    event_rating_normalized = tft.scale_to_0_1(data["event_rating_ratio"])
+    temperature_normalized = tft.scale_to_0_1(data["temperature"])
+    precipitation_normalized = tft.scale_to_0_1(data["precipitation"])
+    slack_negative_normalized = tft.scale_to_0_1(data["slack_negative_ratio"])
 
     out = {
         "early_slack_count_normalized": early_slack_count_normalized,
@@ -25,7 +33,11 @@ def preprocess(data):
         "neutral_emoji_normalized": neutral_emoji_normalized,
         "positive_emoji_normalized": positive_emoji_normalized,
         "github_count_normalized": github_count_normalized,
-        "weekday": data["weekday"]
+        "weekday": data["weekday"],
+        "event_rating_normalized": event_rating_normalized,
+        "temperature_normalized": temperature_normalized,
+        "precipitation_normalized": precipitation_normalized,
+        "slack_negative_normalized": slack_negative_normalized
 
     }
     return out
@@ -63,10 +75,7 @@ def transform_data(data):
                 'midday_slack_count': tensorflow.FixedLenFeature([], tensorflow.int64),
                 'late_slack_count': tensorflow.FixedLenFeature([], tensorflow.int64),
                 # negative_emoji, positive_emoji and neutral_emoji is the sentiment
-                # of
-                # the
-                # emojis
-                # sent.
+                # of the emojis sent.
                 'negative_emoji': tensorflow.FixedLenFeature([], tensorflow.int64),
                 'positive_emoji': tensorflow.FixedLenFeature([], tensorflow.int64),
                 'neutral_emoji': tensorflow.FixedLenFeature([], tensorflow.int64),
@@ -74,6 +83,10 @@ def transform_data(data):
                 'github_count': tensorflow.FixedLenFeature([], tensorflow.int64),
                 # weekday
                 'weekday': tensorflow.FixedLenFeature([], tensorflow.int64),
+                'event_rating_ratio': tensorflow.FixedLenFeature([], tensorflow.int64),
+                'temperature': tensorflow.FixedLenFeature([], tensorflow.int64),
+                'precipitation': tensorflow.FixedLenFeature([], tensorflow.int64),
+                'slack_negative_ratio': tensorflow.FixedLenFeature([], tensorflow.int64),
             }))
 
         transformed_dataset, transform_fn = (
@@ -90,11 +103,34 @@ def transform_data(data):
                    trans["neutral_emoji_normalized"],
                    trans["positive_emoji_normalized"],
                    trans["github_count_normalized"],
-                   trans["weekday"]]
+                   trans["weekday"],
+                   trans["event_rating_normalized"],
+                   trans["temperature_normalized"],
+                   trans["precipitation_normalized"],
+                   trans["slack_negative_normalized"]]
 
         retransformed_data.append(current)
 
     return array(retransformed_data)
+
+
+def make_dataset(X_data, y_data, n_splits):
+    """
+    :param X_data: All the x_data as a numpy array
+    :param y_data: All the y_data as a numpy array
+    :param n_splits: How many splits
+    :return: Performs k-fold cross validation and returns a generator for x_data, y_data,
+    x_train and y_train.
+    """
+
+    def gen():
+        for train_index, test_index in KFold(n_splits).split(X_data):
+            X_train, X_test = X_data[train_index], X_data[test_index]
+            y_train, y_test = y_data[train_index], y_data[test_index]
+            yield X_train, y_train, X_test, y_test
+
+    return tensorflow.data.Dataset.from_generator(gen, (
+        tensorflow.float64, tensorflow.float64, tensorflow.float64, tensorflow.float64))
 
 
 def train(date=None, days=1):
@@ -106,10 +142,18 @@ def train(date=None, days=1):
     print(raw_x_data)
     print(y_data)
 
-    transformed_data = transform_data(raw_x_data)
-    print(transformed_data)
+    raw_x_data = array(raw_x_data)
+    y_data = array(y_data)
+
+    x_data = transform_data(raw_x_data)
+    print(x_data)
     model = baseline_model()
-    model.fit(transformed_data, y_data, epochs=1000)
+
+    n_splits = 5
+    dataset = make_dataset(x_data, y_data, n_splits)
+    for X_train, y_train, X_test, y_test in tfe.Iterator(dataset):
+        model.fit(X_train, y_train, epochs=1000)
+        model.evaluate(X_test, y_test)
     return model
 
 
@@ -119,23 +163,38 @@ def predict(model, data):
 
 def main():
     start_date = datetime(2019, 7, 23, 22, 23, 29)
-    model = train(start_date, days=10)
+    model = train(start_date, days=365)
 
     raw_data = [
         {'weekday': 2, 'early_slack_count': 113, 'midday_slack_count': 56, 'late_slack_count': 87,
-         'negative_emoji': 0, 'positive_emoji': 0, 'neutral_emoji': 0, 'github_count': 6},
+         'negative_emoji': 0, 'positive_emoji': 0, 'neutral_emoji': 0, 'github_count': 6,
+         'event_rating_ratio': 0, 'temperature': 0, 'precipitation': 0, 'slack_negative_ratio': 0},
         {'weekday': 3, 'early_slack_count': 22, 'midday_slack_count': 38, 'late_slack_count': 23,
-         'negative_emoji': 0, 'positive_emoji': 0, 'neutral_emoji': 0, 'github_count': 10},
+         'negative_emoji': 0, 'positive_emoji': 0, 'neutral_emoji': 0, 'github_count': 10,
+         'event_rating_ratio': 0, 'temperature': 0, 'precipitation': 0, 'slack_negative_ratio': 0},
         {'weekday': 4, 'early_slack_count': 67, 'midday_slack_count': 83, 'late_slack_count': 23,
-         'negative_emoji': 0, 'positive_emoji': 0, 'neutral_emoji': 0, 'github_count': 12},
+         'negative_emoji': 0, 'positive_emoji': 0, 'neutral_emoji': 0, 'github_count': 12,
+         'event_rating_ratio': 0, 'temperature': 0, 'precipitation': 0, 'slack_negative_ratio': 0},
         {'weekday': 0, 'early_slack_count': 12, 'midday_slack_count': 107, 'late_slack_count': 78,
-         'negative_emoji': 1, 'positive_emoji': 15, 'neutral_emoji': 2, 'github_count': 11},
+         'negative_emoji': 1, 'positive_emoji': 15, 'neutral_emoji': 2, 'github_count': 11,
+         'event_rating_ratio': 0, 'temperature': 0, 'precipitation': 0,
+         'slack_negative_ratio': 131},
         {'weekday': 1, 'early_slack_count': 55, 'midday_slack_count': 117, 'late_slack_count': 111,
-         'negative_emoji': 0, 'positive_emoji': 29, 'neutral_emoji': 3, 'github_count': 15}]
+         'negative_emoji': 0, 'positive_emoji': 29, 'neutral_emoji': 3, 'github_count': 15,
+         'event_rating_ratio': 0, 'temperature': 0, 'precipitation': 0,
+         'slack_negative_ratio': 49},
+        {'weekday': 2, 'early_slack_count': 78, 'midday_slack_count': 126, 'late_slack_count': 117,
+         'negative_emoji': 2, 'positive_emoji': 140, 'neutral_emoji': 6, 'github_count': 7,
+         'event_rating_ratio': 0, 'temperature': 164, 'precipitation': 0,
+         'slack_negative_ratio': 28}]
+
+
     data = transform_data(raw_data)
 
     prediction = predict(model, data)
-    print(prediction)  # Should print: [0.83333333, 1.0, 0.8, 0.8, 0.96153846]
+
+    # Should print: 0.83333333, 1.0, 0.8, 0.8, 0.96153846, 0.73333333, 0.96153846
+    print(prediction)
 
 
 if __name__ == '__main__':
