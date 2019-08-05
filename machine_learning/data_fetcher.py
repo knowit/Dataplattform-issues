@@ -46,10 +46,10 @@ class DataFetcher:
         for _ in range(days):
             timestamp_from = date_from.timestamp()
             timestamp_to = date_to.timestamp()
-            x_data = DataFetcher.fetch_x_data(timestamp_from, timestamp_to)
             label = DataFetcher.fetch_label(timestamp_from, timestamp_to)
 
             if label is not None:
+                x_data = DataFetcher.fetch_x_data(timestamp_from, timestamp_to)
                 x_data_list.append(x_data)
                 label_list.append(label)
 
@@ -146,13 +146,23 @@ class DataFetcher:
         return results
 
     @staticmethod
-    def fetch_label(timestamp_from, timestamp_to):
+    def fetch_label(timestamp_from, timestamp_to, skip_weekend=True):
         """
         :param timestamp_from: unix timestamp.
         :param timestamp_to: unix timestamp.
+        :param skip_weekend: Should the weekend be skipped or not.
         :return: Either a number (float) between 0 and 1. or None if there was no ratings between
         the timestamps.
         """
+        if skip_weekend:
+            weekday = DataFetcher.get_weekday(timestamp_to)
+            if weekday in [5, 6]:
+                return None
+
+        # Skip the current and future days.
+        if datetime.now().timestamp() < timestamp_to:
+            return None
+
         # In order to get the ratio in the range (0, 1) we add one, and divide by two.
         event_rating_sql = "select (((sum(button) / count(button)) + 1) / 2) as `ratio` from " \
                            "`DayRatingType` where `timestamp`>%s and `timestamp`<%s"
