@@ -1,4 +1,5 @@
 import ubw_poller
+from datetime import datetime
 
 
 def test_create_body_and_headers():
@@ -92,8 +93,8 @@ def test_should_upload_ingest_success():
         "tab": "B"
     }
     last_inserted_doc = "201927"
-
-    res = ubw_poller.should_upload_ingest(new_doc, last_inserted_doc)
+    fake_datetime = datetime(2019, 8, 23, 22, 23, 29)
+    res = ubw_poller.should_upload_ingest(new_doc, last_inserted_doc, fake_datetime)
 
     assert res
 
@@ -108,8 +109,8 @@ def test_should_upload_ingest_success2():
         "tab": "B"
     }
     last_inserted_doc = None
-
-    res = ubw_poller.should_upload_ingest(new_doc, last_inserted_doc)
+    fake_datetime = datetime(2019, 8, 23, 22, 23, 29)
+    res = ubw_poller.should_upload_ingest(new_doc, last_inserted_doc, fake_datetime)
 
     assert res
 
@@ -189,5 +190,21 @@ def test_should_upload_ingest_fail5():
     last_inserted_doc = None
 
     res = ubw_poller.should_upload_ingest(new_doc, last_inserted_doc)
+
+    assert res is False
+
+
+def test_should_upload_ingest_fail6():
+    # should not upload if the reg_period is too close to the current date.
+    new_doc = {
+        "reg_period": "201928",
+        "used_hrs": "198",
+        "_recno": "0",
+        "_section": "D",
+        "tab": "B"
+    }
+    last_inserted_doc = "201927"
+    fake_datetime = datetime(2019, 7, 23, 22, 23, 29)
+    res = ubw_poller.should_upload_ingest(new_doc, last_inserted_doc, fake_datetime)
 
     assert res is False
