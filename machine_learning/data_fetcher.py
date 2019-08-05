@@ -7,15 +7,6 @@ from processing_data import ProcessingData
 class DataFetcher:
     __connection = None
 
-    pre_processing_types = {
-        "SlackType": ProcessingData.process_slack_data,
-        "SlackReactionType": ProcessingData.process_slack_reaction_data,
-        "GithubType": ProcessingData.process_github_data,
-        "EventRatingType": ProcessingData.process_event_rating_data,
-        "YrType": ProcessingData.process_weather_data,
-        "SlackNegativeChannelsType": ProcessingData.process_slack_negative_data
-    }
-
     @staticmethod
     def get_connection():
         if DataFetcher.__connection is None:
@@ -77,10 +68,10 @@ class DataFetcher:
             "weekday": DataFetcher.get_weekday(timestamp_to)
         }
 
-        def execute_sql_query(data_type, sql_query, only_one=False,
-                              sql_params=(timestamp_from, timestamp_to)):
+        def execute_sql_and_process(processing_func, sql_query, only_one=False,
+                                    sql_params=(timestamp_from, timestamp_to)):
             """
-            :param data_type: Which data_type is this.
+            :param processing_func: The processing function that should be run after the sql query.
             :param sql_query: The sql query string.
             :param only_one: Only fetch one record.
             :param sql_params: The parameters used to swap out %s in the sql query.
@@ -98,9 +89,7 @@ class DataFetcher:
                             query_result[i]["timestamp"])
                         query_result[i]["time_of_day"] = time_of_day
                         del query_result[i]["timestamp"]
-            if data_type in DataFetcher.pre_processing_types:
-                # If this data needs more processing then we can do that here.
-                query_result = DataFetcher.pre_processing_types[data_type](query_result)
+            query_result = processing_func(query_result)
 
             results.update(query_result)
 
@@ -115,28 +104,29 @@ class DataFetcher:
         #             "`timestamp`>%s and `timestamp` <%s and `channel_name` IS NOT NULL GROUP" \
         #             " BY `channel_name` ORDER BY `count` desc"
         slack_sql = "SELECT `timestamp` FROM `SlackType` WHERE `timestamp`>%s AND `timestamp` <%s"
-        execute_sql_query("SlackType", slack_sql)
+        execute_sql_and_process(ProcessingData.process_slack_data, slack_sql)
 
         slack_reactions_sql = "SELECT `reaction`, count(*) AS `count` FROM `SlackReactionType` " \
                               "WHERE `timestamp`>%s AND `timestamp` <%s GROUP BY `reaction`"
-        execute_sql_query("SlackReactionType", slack_reactions_sql)
+        execute_sql_and_process(ProcessingData.process_slack_reaction_data, slack_reactions_sql)
 
         github_sql = "SELECT COUNT(*) AS `count` FROM `GithubType` WHERE `timestamp`>%s AND " \
                      "`timestamp` <%s"
-        execute_sql_query("GithubType", github_sql, only_one=True)
+        execute_sql_and_process(ProcessingData.process_github_data, github_sql, only_one=True)
 
         # This is not grouping by each event. This query calculates the voting ratio of all the
         # events that happened today.
         event_rating_sql = "SELECT (sum(button) / count(button))*1000 AS `ratio` FROM " \
                            "`EventRatingType` WHERE `timestamp`>%s AND `timestamp`<%s"
-        execute_sql_query("EventRatingType", event_rating_sql, only_one=True)
+        execute_sql_and_process(ProcessingData.process_event_rating_data, event_rating_sql,
+                                only_one=True)
 
         # Because I want all the numbers as an int I multiply them by 10 and 100 here.
         # Before I later convert it to int.
         yr_sql = "SELECT 10 * (sum(`temperature`)/count(`temperature`)) AS `temp`, " \
                  "100 * (sum(`precipitation`)/count(`precipitation`)) AS `prec` FROM `YrType` " \
                  "WHERE `timestamp`>%s AND `timestamp`<%s"
-        execute_sql_query("YrType", yr_sql, only_one=True)
+        execute_sql_and_process(ProcessingData.process_weather_data, yr_sql, only_one=True)
 
         # Fetches the ratio between number of messages sent in negative channels against the
         # messages sent in every channel. (And multiply it by 1000 because we want it as an int
@@ -150,8 +140,8 @@ class DataFetcher:
                 WHERE `timestamp`>%s AND `timestamp`<%s
             ) `all`
             WHERE (`channel_name` IN ("rant", "ubw") AND `timestamp`>%s AND `timestamp`<%s)"""
-        execute_sql_query("SlackNegativeChannelsType", negative_slack_sql, only_one=True,
-                          sql_params=(timestamp_from, timestamp_to) * 2)
+        execute_sql_and_process(ProcessingData.process_slack_negative_data, negative_slack_sql,
+                                only_one=True, sql_params=(timestamp_from, timestamp_to) * 2)
 
         return results
 

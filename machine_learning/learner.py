@@ -186,11 +186,7 @@ def main():
         {'weekday': 2, 'early_slack_count': 78, 'midday_slack_count': 126, 'late_slack_count': 117,
          'negative_emoji': 2, 'positive_emoji': 140, 'neutral_emoji': 6, 'github_count': 7,
          'event_rating_ratio': 0, 'temperature': 164, 'precipitation': 0,
-         'slack_negative_ratio': 28},
-        {'weekday': 3, 'early_slack_count': 42, 'midday_slack_count': 218, 'late_slack_count': 130,
-         'negative_emoji': 3, 'positive_emoji': 40, 'neutral_emoji': 4, 'github_count': 5,
-         'event_rating_ratio': 0, 'temperature': 201, 'precipitation': 0,
-         'slack_negative_ratio': 23}]
+         'slack_negative_ratio': 28}]
 
 
     data = transform_data(raw_data)
