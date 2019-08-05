@@ -17,13 +17,36 @@ def test_dayratingtype_batch():
         "button": -1
     })
     id, timestamp = ingest("DayRatingType", body)
-
-    batch_job_response = invoke_batch_job("DayRatingType", timestamp_from=timestamp)
-    assert batch_job_response["StatusCode"] == 200
+    invoke_batch_job("DayRatingType", timestamp_from=timestamp)
 
     row = get_single_row("DayRatingType", id)
     assert row["timestamp"] == timestamp
     assert row["button"] == -1
+
+
+def test_slacktype_batch():
+    type = "SlackType"
+    dummy_channel = "C123123"
+    dummy_team = "T012341234"
+    slack_timestamp = 1564993421
+    body = json.dumps({
+        "event": {
+            "type": "message",
+            "channel": dummy_channel
+        },
+        "event_time": slack_timestamp,
+        "team_id": dummy_team
+    })
+
+    id, timestamp = ingest(type, body)
+    invoke_batch_job(type, timestamp_from=timestamp)
+    row = get_single_row(type, id)
+    assert row["timestamp"] == timestamp
+    assert slack_timestamp != timestamp
+    assert row["event_type"] == "message"
+    assert row["slack_timestamp"] == slack_timestamp
+    assert row["team_id"] == dummy_team
+    assert row["channel_name"] is None  # the dummy channel shouldn't match up to anything
 
 
 def ingest(type: str, body: str) -> (str, int):
@@ -65,6 +88,7 @@ def invoke_batch_job(type, timestamp_from=None, timestamp_to=None):
         LogType='None',
         Payload=json.dumps(event).encode()
     )
+    assert response["StatusCode"] == 200
 
     return response
 
