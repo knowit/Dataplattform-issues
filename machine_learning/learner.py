@@ -7,7 +7,7 @@ from data_fetcher import DataFetcher
 from numpy import array
 from tensorflow_transform.tf_metadata import dataset_metadata
 from tensorflow_transform.tf_metadata import dataset_schema
-from sklearn.model_selection import LeaveOneOut, KFold
+from sklearn.model_selection import KFold
 
 tensorflow.enable_eager_execution()
 
@@ -118,6 +118,7 @@ def make_dataset(X_data, y_data, n_splits):
     :return: Performs k-fold cross validation and returns a generator for x_data, y_data,
     x_train and y_train.
     """
+
     def gen():
         for train_index, test_index in KFold(n_splits).split(X_data):
             X_train, X_test = X_data[train_index], X_data[test_index]
@@ -158,7 +159,7 @@ def predict(model, data):
 
 def main():
     start_date = datetime(2019, 7, 23, 22, 23, 29)
-    model = train(start_date, days=15)
+    model = train(start_date, days=365)
 
     raw_data = [
         {'weekday': 2, 'early_slack_count': 113, 'midday_slack_count': 56, 'late_slack_count': 87,
