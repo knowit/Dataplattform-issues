@@ -49,6 +49,44 @@ def test_slacktype_batch():
     assert row["channel_name"] is None  # the dummy channel shouldn't match up to anything
 
 
+def test_githubtype_batch():
+    type = "GithubType"
+    commit_time = "2019-06-21T13:29:31+02:00"
+    stargazers = 1001
+    forks_count = 123123
+    issue_count = 4321
+    body = json.dumps({
+        "repository": {
+            "full_name": "reponame",
+            "stargazers_count": stargazers,
+            "language": "SuperAwesomeProgrammingLanguage",
+            "forks_count": forks_count,
+            "open_issues_count": issue_count
+        },
+        "sender": {
+            "login": "GH_username"
+        },
+        "head_commit": {
+            "id": "headcommitid",
+            "timestamp": commit_time
+        },
+        "ref": "refs/test/test1"
+    })
+    id, timestamp = ingest(type, body)
+    invoke_batch_job(type, timestamp_from=timestamp)
+    row = get_single_row(type, id)
+    assert row["timestamp"] == timestamp
+    assert row["repository_name"] == "reponame"
+    assert row["github_username"] == "GH_username"
+    assert row["commit_id"] == "headcommitid"
+    assert row["commit_timestamp"] == commit_time
+    assert row["stargazers_count"] == stargazers
+    assert row["language"] == "SuperAwesomeProgrammingLanguage"
+    assert row["forks_count"] == forks_count
+    assert row["open_issues_count"] == issue_count
+    assert row["ref"] == "refs/test/test1"
+
+
 def ingest(type: str, body: str) -> (str, int):
     ingest_url = INGEST_CONFIG["IngestURL"] + type
     response_code, response_body = util.post_to_api(body, ingest_url, apikey=ingest_apikey)
