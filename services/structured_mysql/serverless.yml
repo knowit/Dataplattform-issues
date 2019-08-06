@@ -10,6 +10,10 @@ custom:
     prod: db.t2.medium
     dev: db.t2.small
     test: db.t2.small
+  securityGroups:
+    prod: 'sg-0583a4e1657cfded3' # DATAPLATTFORM-QUICKSIGHT-IRELAND
+    dev: 'sg-0b7bf5c0a1440eae6' # ALLOW_TRAVIS_TO_MYSQLAURORA
+    test: 'sg-0b7bf5c0a1440eae6' # ALLOW_TRAVIS_TO_MYSQLAURORA
   creds:
     user: admin # TODO Hmm
     password: ${ssm:dataplattform_aurora_${self:custom.stage}_password}
@@ -17,7 +21,7 @@ custom:
     useDownloadCache: true
     useStaticCache: true
   output:
-    file: ../integration_tests/structured_mysql.serverless_outputs.json
+    file: ../integration_tests/structured_mysql.serverless_outputs_${self:custom.stage}.json
 
 provider:
   name: aws
@@ -124,7 +128,7 @@ resources:
         DBSubnetGroupName: 'default-vpc-02f9ab9c69358eb52'
         VpcSecurityGroupIds:
           - 'sg-0c9b4ed623306c437' # DATAPLATTFORM-ALLOW-KNOWIT
-          - 'sg-0583a4e1657cfded3' # DATAPLATTFORM-QUICKSIGHT-IRELAND
+          - ${self:custom.securityGroups.${self:custom.stage}}
     mysqlDBInstance:
       Type: AWS::RDS::DBInstance
       Properties:
@@ -165,6 +169,10 @@ resources:
       Value: ${self:custom.database_port}
     auroraDBName:
       Value: ${self:custom.database_name}
+    batchJobLambda:
+      Value: ${self:custom.batch_job_lambda}
+    region:
+      Value: ${self:provider.region}
 
 
 plugins:

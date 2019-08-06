@@ -13,7 +13,7 @@ custom:
     polling_ingest: ${ssm:dataplattform_${self:custom.stage}_polling_ingest_apikey}
     travis_ingest: ${ssm:dataplattform_${self:custom.stage}_travis_ingest_apikey}
   output:
-    file: ../integration_tests/ingest.serverless_outputs.json
+    file: ../integration_tests/ingest.serverless_outputs_${self:custom.stage}.json
 
 provider:
   name: aws
