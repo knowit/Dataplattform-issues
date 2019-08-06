@@ -48,6 +48,7 @@ functions:
       include:
         - 'batch_job_aurora/*.py'
         - 'batch_job_aurora/data_types/*'
+        - 'batch_job_aurora/emoji/*'
     environment:
       DATAPLATTFORM_AURORA_HOST:
         Fn::GetAtt:
