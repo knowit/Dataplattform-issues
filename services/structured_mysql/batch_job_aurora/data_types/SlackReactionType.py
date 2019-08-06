@@ -44,7 +44,7 @@ class SlackReactionType(AbstractType):
         ("team_id", str): ["data", "team_id"],
         ("reaction", str): ["data", "event", "reaction"],
         ("channel_name", str, match_slack_channel): [],
-        ("positive_ratio", str, get_emoji_sentiment_positive): [],
-        ("neutral_ratio", str, get_emoji_sentiment_neutral): [],
-        ("negative_ratio", str, get_emoji_sentiment_negative): []
+        ("positive_ratio", float, get_emoji_sentiment_positive): [],
+        ("neutral_ratio", float, get_emoji_sentiment_neutral): [],
+        ("negative_ratio", float, get_emoji_sentiment_negative): []
     }
