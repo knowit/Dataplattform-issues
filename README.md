@@ -13,9 +13,12 @@ https://github.com/knowit/Dataplattform/wiki/Sende-inn-data-til-dataplattformen
       * Kode for fysisk feedback-knapp med 3 alternativer
   * ```rate_day/```
       * Kode for fysisk feedback-knapp med 2 alternativer
+  * ```machine_learning```
+      * Jupyter notebook med demonstrasjon av maskin-læring på data fra plattformen
 
 ## Oppsett
 Se ```services/README.md``` for deploying til AWS og oppsett av QuickSight.
+Spør i `#dataplattform` på Slack for nøkler, tilgang, osv.
 
 
 ## Disse datakildene kan inneholde persondata:

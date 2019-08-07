@@ -42,7 +42,7 @@ services kan du kjøre:
 For å koble QuickSight til plattformen trenger du hostname og innlogginsinformasjon fra
 prod-staget til `structured_mysql`. Etter du har deployet `structured_mysql`:
 ```bash
-cat integration_tests/structured_mysql.serverless_outputs.json
+cat integration_tests/structured_mysql.serverless_outputs_prod.json
 ```
 Her ligger alt du trenger for å legge til databasen som en data source i Quicksight. Bruk gjerne
 `auroraClusterROEndpoint` som endpoint, siden QuickSight ikke trenger write access.
