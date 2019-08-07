@@ -1,4 +1,5 @@
 import json
+from ingest.ingest_util import IngestUtil
 
 
 def filter_github(data):
@@ -8,19 +9,62 @@ def filter_github(data):
     return data
 
 
+def analyze_slack_messages(slack_message, channel, event_time, team_id):
+    """
+    :param slack_message: The slack message (str)
+    :param channel: Slack channel id.
+    :param event_time: slack event_time.
+    :param team_id: Slack team id.
+    :return: A list of documents that should be added
+    """
+    reactions = []
+    # For cases where you type multiple emojis with no space inbetween them.
+    if "::" in slack_message:
+        slack_message = slack_message.replace("::", ": :")
+
+    for word in slack_message.split():
+        if word.startswith(":") and word.endswith(":"):
+            reaction = word[1:-1]
+            reactions.append(reaction)
+    documents = []
+    for reaction in reactions:
+        document = {
+            "event": {
+                "type": "reaction_added",  # TODO: Should this be a different type?
+                "item": {
+                    "channel": channel
+                },
+                "reaction": reaction
+            },
+            "event_time": event_time,
+            "team_id": team_id,
+        }
+        documents.append(json.dumps(document))
+    return documents
+
+
 def filter_slack(data):
     # Being very careful to only select the data points we need as to not accidentally include some
     # personal information
     data_dict = json.loads(data)
     if "event" not in data_dict:
         return None
+
+    channel = data_dict["event"]["channel"]
+    event_time = data_dict["event_time"]
+    team_id = data_dict["team_id"]
+    if "text" in data_dict["event"]:
+        slack_message = data_dict["event"]["text"]
+        documents = analyze_slack_messages(slack_message, channel, event_time, team_id)
+        for document in documents:
+            IngestUtil.insert_doc("SlackEmojiType", document)
     document = {
         "event": {
             "type": "message",
-            "channel": data_dict["event"]["channel"]
+            "channel": channel
         },
-        "event_time": data_dict["event_time"],
-        "team_id": data_dict["team_id"],
+        "event_time": event_time,
+        "team_id": team_id,
     }
 
     return json.dumps(document)
