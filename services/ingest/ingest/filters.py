@@ -1,5 +1,6 @@
 import json
 from ingest.ingest_util import IngestUtil
+import re
 
 
 def filter_github(data):
@@ -7,6 +8,12 @@ def filter_github(data):
     if data_dict.get("repository") and data_dict["repository"].get("private"):
         return None
     return data
+
+
+def remove_emoji_modifiers(reaction):
+    if "::skin-tone-" in reaction:
+        reaction = re.sub(r'::skin-tone-.', '', reaction)
+    return reaction
 
 
 def analyze_slack_messages(slack_message, channel, event_time, team_id):
@@ -17,6 +24,8 @@ def analyze_slack_messages(slack_message, channel, event_time, team_id):
     :param team_id: Slack team id.
     :return: A list of documents that should be added
     """
+    slack_message = remove_emoji_modifiers(slack_message)
+
     reactions = []
     # For cases where you type multiple emojis with no space inbetween them.
     if "::" in slack_message:
@@ -80,14 +89,14 @@ def filter_slack_reaction(data):
     if not channel.startswith("C"):
         # Drop the data point if message was not in a public channel
         return None
-
+    reaction = remove_emoji_modifiers(data_dict["event"]["reaction"])
     document = {
         "event": {
             "type": "reaction_added",
             "item": {
                 "channel": channel
             },
-            "reaction": data_dict["event"]["reaction"]
+            "reaction": reaction
         },
         "event_time": data_dict["event_time"],
         "team_id": data_dict["team_id"],
