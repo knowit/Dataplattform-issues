@@ -86,13 +86,13 @@ def docs_to_json(docs):
     return json_docs
 
 
-def upload_data_to_bucket(data, bucket_name="dataplattform-get-docs-cache"):
+def upload_data_to_bucket(data):
     """
     Uploads the data and creates a presigned url that works for 5 minutes.
     :param data: the data that should be uploaded. as a dictionary.
-    :param bucket_name: The name of the bucket.
     :return: The presigned url that works for 5 minutes.
     """
+    bucket_name = os.getenv("GETDOCS_S3_BUCKET")
     data_encoded = json.dumps(data).encode(encoding='UTF-8')
     # Generate a random S3 key name
     upload_key = uuid.uuid4().hex

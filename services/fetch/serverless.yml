@@ -4,6 +4,7 @@ custom:
   stage: ${opt:stage, self:provider.stage}
   project: Dataplattform-${self:custom.stage}
   get_docs_lambda: ${self:custom.project}-get_docs
+  s3_bucket_name: dataplattform-${self:custom.stage}-get-docs-bucket
   apikeys:
     fetch: ${ssm:dataplattform_${self:custom.stage}_fetch_apikey}
     batch_job: ${ssm:dataplattform_${self:custom.stage}_batch_job_apikey}
@@ -50,6 +51,7 @@ functions:
         - 'get_docs/*.py'
     environment:
       DATAPLATTFORM_RAW_TABLENAME: ${self:custom.project}
+      GETDOCS_S3_BUCKET: ${self:custom.s3_bucket_name}
     events:
       - http:
           path: get_docs/{type}
@@ -91,6 +93,20 @@ resources:
                   Action:
                     - "s3:*" #TODO find out which ones we actually need
                   Resource: "*"
+    getDocsBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        AccessControl: Private
+        BucketName: ${self:custom.s3_bucket_name}
+        LifecycleConfiguration:
+          Rules:
+            - ExpirationInDays: 1
+              Status: Enabled
+        PublicAccessBlockConfiguration:
+          BlockPublicAcls: True
+          BlockPublicPolicy: True
+          IgnorePublicAcls: True
+          RestrictPublicBuckets: True
   Outputs:
     GetDocsURL:
       Description: "Get_docs URL"
@@ -107,5 +123,7 @@ resources:
       Value: ${self:custom.apikeys.fetch}
       Export:
         Name: ${self:custom.project}-fetch-apikey
+    S3BucketName:
+      Value: ${self:custom.s3_bucket_name}
 plugins:
   - serverless-stack-output

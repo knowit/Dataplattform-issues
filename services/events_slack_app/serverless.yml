@@ -134,8 +134,8 @@ resources:
           - AttributeName: event_id
             KeyType: HASH
         ProvisionedThroughput:
-          ReadCapacityUnits: 5
-          WriteCapacityUnits: 5
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
   Outputs:
     EventTableArn:
       Description: "event code table arn"
