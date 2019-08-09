@@ -3,6 +3,10 @@
 Her ligger alle ```serverless framework```-services som deployeres til aws.
 De har hver sin ```serverless.yml``` som deployeres til et stage ved å kjøre
 ```serverless deploy --stage <stage>```.
+Vi anbefaler å installere `serverless` globalt:
+```bash
+npm install --global serverless
+```
 
 Vi bruker disse stagesene:
 * `prod`
@@ -39,10 +43,12 @@ services kan du kjøre:
 
 
 ## QuickSight
+NB: Disse instruksjonene gjelder første gang prod deployes, ikke for hvert datasett.
+
 For å koble QuickSight til plattformen trenger du hostname og innlogginsinformasjon fra
 prod-staget til `structured_mysql`. Etter du har deployet `structured_mysql`:
 ```bash
 cat integration_tests/structured_mysql.serverless_outputs_prod.json
 ```
-Her ligger alt du trenger for å legge til databasen som en data source i Quicksight. Bruk gjerne
+Her ligger alt du trenger for å legge til databasen som en data source i Quicksight. Bruk
 `auroraClusterROEndpoint` som endpoint, siden QuickSight ikke trenger write access.

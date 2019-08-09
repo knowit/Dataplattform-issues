@@ -1,10 +1,14 @@
 # Dataplattform
 
+[Wiki](https://github.com/knowit/Dataplattform/wiki/)
+
 ## Hente ut data fra dataplattformen
-https://knowit.github.io/Dataplattform/
+[Swagger](https://knowit.github.io/Dataplattform/)
 
 ## Sende inn data
-https://github.com/knowit/Dataplattform/wiki/Sende-inn-data-til-dataplattformen
+[Sende inn data](https://github.com/knowit/Dataplattform/wiki/Legge-til-en-ny-datatype-(datakilde\))
+
+[Eksempel av innsending](https://github.com/knowit/Dataplattform/wiki/Eksempel:-sende-inn-data-til-dataplattformen)
 
 ## Mappestruktur
   * ```services/```
