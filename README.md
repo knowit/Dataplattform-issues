@@ -2,6 +2,8 @@
 
 [Wiki](https://github.com/knowit/Dataplattform/wiki/)
 
+[Board](https://github.com/knowit/Dataplattform/projects/1) med backlog etter sommeren
+
 ## Hente ut data fra dataplattformen
 [Swagger](https://knowit.github.io/Dataplattform/)
 
@@ -33,7 +35,7 @@ Spør i `#dataplattform` på Slack for nøkler, tilgang, osv.
   * slack
       * Slack webhooks kan inneholde alt, avhengig av hvordan integrasjons-appen er konfigurert.
       Vi tar bare vare på tidspunkt og kanal for meldinger skrevet i offentlige kanaler.
-      Se ```lambda/ingest/filters.py```.
+      Se ```services/ingest/ingest/filters.py```.
       For reactions til meldinger lagrer vi kanal, tidspunkt og hvilken emoticon som ble brukt.
   * knowitlabs (blogg)
       * Vi scraper knowitlabs.no og lagrer litt offentlig informasjon om hvert blogginnlegg, som

@@ -40,6 +40,13 @@ services kan du kjøre:
 ```bash
 ./deploy_every_service.sh <stage>
 ```
+Dette forutsetter at AWS systems manager inneholder verdiene som trengs for hver spesifikke
+integrasjon. For en helt fresh deploy burde du derfor gå gjennom hver service sin README for
+oppsett. For å populere SSM med API keys for et stage kan du kjøre
+```bash
+cd scripts/
+python3 generate_keys.py
+```
 
 
 ## QuickSight
