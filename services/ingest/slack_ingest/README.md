@@ -13,5 +13,7 @@ faktisk er sendt fra Slack ved å regne ut en signatur.
 Dette må vi gjøre fordi Slack web hooks ikke kan sende en custom header med en api key slik som
 andre datakilder.
 Man trenger også en forhåndsdelt ```Signing Secret``` som hentes fra
-```Basic settings/App credentials``` til appen.
-Secreten må legges som en environment variable ```DATAPLATTFORM_SLACK_SECRET```.
+```Basic settings/App credentials``` til appen. Secreten må legges inn i SSM:
+```
+aws ssm put-parameter --type String --name dataplattform_slack_shared_secret --tags Key=Project,Value=Dataplattform --value <VERDI>
+```

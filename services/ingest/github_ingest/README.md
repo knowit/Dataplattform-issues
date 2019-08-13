@@ -7,3 +7,7 @@ andre datakilder.
 Man trenger en forhåndsdelt ```Secret``` som er lagt inn på github.com sammen med URLen
 som peker på denne lambdaen. Denne må legges inn i aws ssm som
 ```dataplattform_github_shared_secret```.
+
+```
+aws ssm put-parameter --type String --name dataplattform_github_shared_secret --tags Key=Project,Value=Dataplattform --value <VERDI>
+```

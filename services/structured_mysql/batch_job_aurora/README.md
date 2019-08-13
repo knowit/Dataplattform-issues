@@ -8,9 +8,17 @@ Det skader ikke å kjøre lambdaen for ofte, da duplikatdata ignoreres, men da b
 konfigureres til å hente data fra DynamoDB for kortere intervaller enn 1t10m for å senke
 disk/nettverkstrafikk.
 
+## Oppsett
+MySQL-passord på legges inn i SSM før deploy til et nytt stage. Generer et passord som følger
+MySQL sine begrensninger og legg det inn for staget ditt:
+```
+aws ssm put-parameter --type String --name dataplattform_aurora_<staget ditt>_password --tags Key=Project,Value=Dataplattform --value <VERDI>
+```
+
+
 ## Legge til ny datatype
 Vi har en
-[Wiki-side](https://github.com/knowit/Dataplattform/wiki/Sende-inn-data-til-dataplattformen)
+[Wiki-side](https://github.com/knowit/Dataplattform/wiki/Legge-til-en-ny-datatype-(datakilde\))
 om å legge til en ny datatype.
 
 Se ```data_types/UBWType``` for et eksempel med enkel uthenting fra et datapunkt.
