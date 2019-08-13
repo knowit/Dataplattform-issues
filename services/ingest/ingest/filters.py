@@ -80,7 +80,7 @@ def filter_slack(data):
     return json.dumps(message_document)
 
 
-def filter_slack_reaction(data):
+def filter_slack_emoji(data):
     # Being very careful to only select the data points we need as to not accidentally include some
     # personal information
     data_dict = json.loads(data)
@@ -113,5 +113,5 @@ version of the data point, or None if the data point should be ignored.
 filter = {
     "GithubType": filter_github,
     "SlackType": filter_slack,
-    "SlackReactionType": filter_slack_reaction
+    "SlackEmojiType": filter_slack_emoji
 }

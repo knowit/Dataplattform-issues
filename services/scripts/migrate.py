@@ -26,9 +26,12 @@ def get_docs(table, data_type, timestamp_from, timestamp_to):
 
 
 def migrate(document_type, source_table_name, target_table_name,
-            regenerate_timestamp_random=False):
+            regenerate_timestamp_random=False,
+            new_type=None):
     source_table = client.Table(source_table_name)
     target_table = client.Table(target_table_name)
+    if not new_type:
+        new_type = document_type
 
     ts_now = int(datetime.now().timestamp())
     docs = get_docs(source_table, document_type, 0, ts_now)
@@ -49,6 +52,7 @@ def migrate(document_type, source_table_name, target_table_name,
         timestamp = int(doc["timestamp"])
         fixed_doc = doc
         fixed_doc["timestamp_random"] = tr.get_timestamp_random(timestamp=timestamp)
+        fixed_doc["type"] = new_type
         target_table.put_item(Item=fixed_doc)
         i += 1
         print(f"{i} / {items}")
@@ -79,4 +83,6 @@ if __name__ == '__main__':
     # migrate("EventType", "Dataplattform-dev", "Dataplattform-test",
     #         regenerate_timestamp_random=True)
     # delete_documents("Dataplattform-test", "YeetType", 0, 100000000000)
+    # migrate("SlackReactionType", "Dataplattform-test", "Dataplattform-test", new_type="SlackEmojiType")
+    # delete_documents("Dataplattform-test", "SlackReactionType", 0, 100000000000)
     pass

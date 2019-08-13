@@ -31,7 +31,7 @@ def post_to_ingest_api(body):
     if event_type == "message":
         url += "SlackType"
     elif event_type == "reaction_added":
-        url += "SlackReactionType"
+        url += "SlackEmojiType"
 
     data = body.encode("ascii")
     try:
