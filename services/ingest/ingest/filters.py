@@ -11,9 +11,7 @@ def filter_github(data):
 
 
 def remove_emoji_modifiers(reaction):
-    if "::skin-tone-" in reaction:
-        reaction = re.sub(r'::skin-tone-.', '', reaction)
-    return reaction
+    return re.sub(r'::skin-tone-.', '', reaction)
 
 
 def analyze_slack_messages(slack_message, channel, event_time, team_id):
@@ -26,20 +24,22 @@ def analyze_slack_messages(slack_message, channel, event_time, team_id):
     """
     slack_message = remove_emoji_modifiers(slack_message)
 
-    reactions = []
-    # For cases where you type multiple emojis with no space inbetween them.
+    # This might happen if emojis are back to back, but it may also happen with pasted data such
+    # as ipv6 addresses, so it's safest to ignore it
     if "::" in slack_message:
-        slack_message = slack_message.replace("::", ": :")
+        return []
 
+    reactions = []
     for word in slack_message.split():
         if word.startswith(":") and word.endswith(":"):
             reaction = word[1:-1]
             reactions.append(reaction)
+
     documents = []
     for reaction in reactions:
         document = {
             "event": {
-                "type": "reaction_added",  # TODO: Should this be a different type?
+                "type": "emoji_used",
                 "item": {
                     "channel": channel
                 },
@@ -67,7 +67,8 @@ def filter_slack(data):
         documents = analyze_slack_messages(slack_message, channel, event_time, team_id)
         for document in documents:
             IngestUtil.insert_doc("SlackEmojiType", document)
-    document = {
+
+    message_document = {
         "event": {
             "type": "message",
             "channel": channel
@@ -76,7 +77,7 @@ def filter_slack(data):
         "team_id": team_id,
     }
 
-    return json.dumps(document)
+    return json.dumps(message_document)
 
 
 def filter_slack_reaction(data):

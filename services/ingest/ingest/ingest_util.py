@@ -19,7 +19,7 @@ class IngestUtil:
     @staticmethod
     def insert_doc(type, data=None, timestamp=None):
         if data is None:
-            return 0
+            return 0, ""
         if timestamp is None:
             timestamp = int(dt.now().timestamp())
 
@@ -27,13 +27,9 @@ class IngestUtil:
         item = {
             "type": type,
             "timestamp_random": timestamp_random,
-            "timestamp": timestamp
+            "timestamp": timestamp,
+            "data": data
         }
-        if data is not None:
-            item["data"] = data
-
-        IngestUtil.get_table().put_item(
-            Item=item
-        )
+        IngestUtil.get_table().put_item(Item=item)
 
         return timestamp, timestamp_random

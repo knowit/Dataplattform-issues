@@ -6,7 +6,7 @@ import ingest.filters as filters
 
 def handler(event, context):
     data_type = event["pathParameters"]["type"]
-    data = (event["body"])
+    data = event["body"]
     if data_type in filters.filter:
         data = filters.filter[data_type](data)
     timestamp, timestamp_random = IngestUtil.insert_doc(data_type, data=data)
