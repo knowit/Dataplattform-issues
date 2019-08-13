@@ -12,6 +12,8 @@ const char* password = "";
 const char* url = "...com/prod/dataplattform_ingest/DayRatingType";
 const char* ingest_api_key = "";
 
+unsigned long last_wifi_check = 0;
+
 void setup() {
     Serial.begin(115200);
     delay(20);
@@ -23,6 +25,11 @@ void setup() {
     pinMode(pin_btn2, INPUT);
 
     Serial.println("Startup");
+    connect_to_wifi();
+    last_wifi_check = millis();
+}
+
+void connect_to_wifi() {
     Serial.print("URL: ");
     Serial.println(url);
     Serial.print("Connecting to ");
@@ -45,7 +52,7 @@ void setup() {
     Serial.println("IP address: ");
     Serial.println(WiFi.localIP());
     digitalWrite(pin_g, HIGH);
-    delay(1000);
+    delay(300);
     digitalWrite(pin_g, LOW);
 }
 
@@ -53,44 +60,50 @@ void loop() {
     int btn1 = digitalRead(pin_btn1);
     int btn2 = digitalRead(pin_btn2);
     if (btn1 | btn2) {
-        if (WiFi.status() == WL_CONNECTED) {
-            digitalWrite(pin_r, LOW);
-            digitalWrite(pin_b, HIGH);
-            HTTPClient http;
-            http.begin(url);
-            http.addHeader("Content-Type", "application/json");
-            http.addHeader("x-api-key", ingest_api_key);
+        if (WiFi.status() != WL_CONNECTED) {
+            connect_to_wifi();
+        }
+        digitalWrite(pin_r, LOW);
+        digitalWrite(pin_b, HIGH);
+        HTTPClient http;
+        http.begin(url);
+        http.addHeader("Content-Type", "application/json");
+        http.addHeader("x-api-key", ingest_api_key);
 
-            String post = "{\"button\": ";
-            if (btn1) {
-                post += "-1 ";
-            } else if (btn2) {
-                post += "1 ";
-            }
-            post += "}";
-            Serial.println(post);
-            int response = http.POST(post);
-            digitalWrite(pin_b, LOW);
-            if (response >= 200 && response < 300) {
-                digitalWrite(pin_g, HIGH);
-                Serial.println(response);
-                Serial.println(http.getString());
-            } else {
-                digitalWrite(pin_r, HIGH);
-                Serial.print("Error on POST: ");
-                Serial.println(response);
-                Serial.println(http.getString());
-            }
-            http.end();
-            delay(1000);
-            digitalWrite(pin_r, LOW);
-            digitalWrite(pin_g, LOW);
+        String post = "{\"button\": ";
+        if (btn1) {
+            post += "-1 ";
+        } else if (btn2) {
+            post += "1 ";
+        }
+        post += "}";
+        Serial.println(post);
+        int response = http.POST(post);
+        digitalWrite(pin_b, LOW);
+        if (response >= 200 && response < 300) {
+            digitalWrite(pin_g, HIGH);
+            Serial.println(response);
+            Serial.println(http.getString());
         } else {
             digitalWrite(pin_r, HIGH);
-            Serial.println("Error: not connected to WiFi");
-            delay(1000);
-            digitalWrite(pin_r, LOW);
+            Serial.print("Error on POST: ");
+            Serial.println(response);
+            Serial.println(http.getString());
+            delay(500);
         }
+        http.end();
+        delay(500);
+        digitalWrite(pin_r, LOW);
+        digitalWrite(pin_g, LOW);
+    }
+
+    // Check WiFi every 30 secs
+    unsigned long current_millis = millis();
+    if (last_wifi_check + 30000 < current_millis) {
+        if (WiFi.status() != WL_CONNECTED) {
+            connect_to_wifi();
+        }
+        last_wifi_check = current_millis;
     }
 }
 
