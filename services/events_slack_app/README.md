@@ -21,13 +21,13 @@ For å lese om hvordan man tar i bruk denne appen, se
     Gå til `Basic Information` og `Add features and functionality` og `Permissions` og legg til et nytt permission scope `chat:write:bot` som gjør at du kan sende meldinger som botten du nettopp lagde.
 
 6.
-    Lagre Bot brukern sin oauth token i AWS SSN. Du finner tokenen under `OAuth  & Permissions` og `Bot User OAuth Access Token`.
+    Lagre Bot brukern sin oauth token i AWS SSM. Du finner tokenen under `OAuth  & Permissions` og `Bot User OAuth Access Token`.
 
     ```bash
     aws ssm put-parameter --type String --name dataplattform_slack_event_oauth --tags Key=Project,Value=Dataplattform --value xoxb-...
     ```
 7.
-    For å deploye trenger du en ```creds.json```. Vi har et eget ```Dataplattform```-prosjekt i Google API console. Lag en service account på prosjektet og velg json når du lagrer credentialsene. Lagre som ```slack_response/creds.json```.
+    For å deploye trenger du en ```creds.json```. Vi har et eget ```Dataplattform```-prosjekt i [Google API console](https://console.developers.google.com/apis/credentials). Lag en service account på prosjektet og velg json når du lagrer credentialsene. Lagre som ```slack_response/creds.json```.
 8.
     Deretter må du hente en google calender ID og så lagre den i SSM:
     ```bash

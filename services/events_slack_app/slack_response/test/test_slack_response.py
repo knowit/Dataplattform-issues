@@ -20,7 +20,7 @@ def test_create_blocks():
             "text": {
                 "type": "mrkdwn",
                 "text": "Velg arrangementet du vil bruke knappen på."
-                        "\n (Listen er hentet fra google calender, lag event der først om du ikke "
+                        "\n (Listen er hentet fra google calendar, lag event der først om du ikke "
                         "ser den på listen her.)\n Les hvordan du kobler opp her: \n "
                         "https://github.com/knowit/Dataplattform/wiki/Lage-et-arrangement-koblet-opp-mot-vurderingssystemet"
             }

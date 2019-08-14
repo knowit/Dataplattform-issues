@@ -4,9 +4,9 @@
 const int pin_r = 4;
 const int pin_g = 16;
 const int pin_b = 17;
-const int pin_btn1 = 5;
-const int pin_btn2 = 18;
-const int pin_btn3 = 19;
+const int pin_btn1 = 5; // :(
+const int pin_btn2 = 18; // :|
+const int pin_btn3 = 19; // :)
 
 // Edit these
 const char* ssid = "";

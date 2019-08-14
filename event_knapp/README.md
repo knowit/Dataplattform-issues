@@ -10,10 +10,8 @@ Koden for ESP32 ligger i ```main/main.ino```. For å kjøre koden må du:
     * ```ssid``` skal være ssid til WiFiet du bruker
     * ```password``` skal være passordet til WiFiet
     * ```url``` skal være ```HTTPS```-urlen til ingest API endepunktet
-        * URLen burde se ut som ```https://[...]/dataplattform_ingest/EventRatingType```
-    * ```ingest_api_key``` skal være en gyldig API-nøkkel til ingest API gatewayen
-        * Husk å legge til API-nøkkelen i en usage plan som har tilgang til ingest-APIet
-        hvis du lager en ny nøkkel
+        * URLen burde se ut som ```https://[...].execute-api.[...].amazonaws.com/prod/dataplattform_ingest/EventRatingType```
+    * ```ingest_api_key``` skal være en gyldig API-nøkkel til ingest APIet
 * Kompiler og last opp til ESP32 over USB
 
 Mikrokontrolleren sender informasjon om hva den holder på med over serial, så det burde

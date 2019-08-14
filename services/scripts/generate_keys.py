@@ -1,6 +1,7 @@
 import os
 import string
 import random
+import sys
 
 keys = [
     "dataplattform_STAGE_slack_ingest_apikey",
@@ -27,7 +28,7 @@ if stage not in default_stages:
         f"{stage} er ikke et standard stage (prod/test/dev), er du sikker på at du "
         f"vil fortsette? [y/N]: ")
     if not confirmation.lower() == "y":
-        exit()
+        sys.exit()
 
 generated = []
 fails = []
@@ -43,17 +44,19 @@ for key in keys:
         fails.append(name)
 
 if len(generated) > 0:
-    print("---- Generated keys ----")
+    print("---- Nye nøkler ----")
     for (name, val) in generated:
         print(f"{name}: {val}")
 
 if len(fails) > 0:
-    print("---- FAILED creating keys ----")
+    print("---- Kunne ikke lastes opp ----")
     for name in fails:
         print(name)
 
 print()
 if len(fails) == 0:
-    print(f"\nAll {len(keys)} keys successfully created. Deploy services use the new keys.")
+    print(f"\nAlle {len(keys)} nøkler generert og lastet opp. Deploy services for å bruke de nye "
+          f"nøklene.")
 else:
-    print(f"Some keys could not be created.")
+    print("Noen nøkler kunne ikke lages.")
+    print("Dette kan bety at nøklene allerede finnes. Se på output lenger opp.")

@@ -1,10 +1,18 @@
 # Dataplattform
 
+[Wiki](https://github.com/knowit/Dataplattform/wiki/)
+
+[Board](https://github.com/knowit/Dataplattform/projects/1) med backlog etter sommeren
+
 ## Hente ut data fra dataplattformen
-https://knowit.github.io/Dataplattform/
+
+[Swagger](https://knowit.github.io/Dataplattform/)
 
 ## Sende inn data
-https://github.com/knowit/Dataplattform/wiki/Sende-inn-data-til-dataplattformen
+
+[Sende inn data](https://github.com/knowit/Dataplattform/wiki/Legge-til-en-ny-datatype-(datakilde\) )
+
+[Eksempel av innsending](https://github.com/knowit/Dataplattform/wiki/Eksempel:-sende-inn-data-til-dataplattformen)
 
 ## Mappestruktur
   * ```services/```
@@ -13,9 +21,12 @@ https://github.com/knowit/Dataplattform/wiki/Sende-inn-data-til-dataplattformen
       * Kode for fysisk feedback-knapp med 3 alternativer
   * ```rate_day/```
       * Kode for fysisk feedback-knapp med 2 alternativer
+  * ```machine_learning```
+      * Jupyter notebook med demonstrasjon av maskin-læring på data fra plattformen
 
 ## Oppsett
 Se ```services/README.md``` for deploying til AWS og oppsett av QuickSight.
+Spør i `#dataplattform` på Slack for nøkler, tilgang, osv.
 
 
 ## Disse datakildene kan inneholde persondata:
@@ -26,7 +37,7 @@ Se ```services/README.md``` for deploying til AWS og oppsett av QuickSight.
   * slack
       * Slack webhooks kan inneholde alt, avhengig av hvordan integrasjons-appen er konfigurert.
       Vi tar bare vare på tidspunkt og kanal for meldinger skrevet i offentlige kanaler.
-      Se ```lambda/ingest/filters.py```.
+      Se ```services/ingest/ingest/filters.py```.
       For reactions til meldinger lagrer vi kanal, tidspunkt og hvilken emoticon som ble brukt.
   * knowitlabs (blogg)
       * Vi scraper knowitlabs.no og lagrer litt offentlig informasjon om hvert blogginnlegg, som

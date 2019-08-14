@@ -4,8 +4,8 @@
 const int pin_r = 4;
 const int pin_g = 16;
 const int pin_b = 17;
-const int pin_btn1 = 5;
-const int pin_btn2 = 18;
+const int pin_btn1 = 5; // thumbs down
+const int pin_btn2 = 18; // thumbs up
 
 const char* ssid = "";
 const char* password = "";
