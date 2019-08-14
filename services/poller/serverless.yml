@@ -97,7 +97,7 @@ resources:
             KeyType: HASH
         ProvisionedThroughput:
           ReadCapacityUnits: 5
-          WriteCapacityUnits: 5
+          WriteCapacityUnits: 1
   Outputs:
     PollingStatusTableName:
       Description: "The table name for the polling status table."

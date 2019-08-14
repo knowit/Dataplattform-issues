@@ -37,7 +37,7 @@ def get_emoji_sentiment_negative(doc):
     return get_emoji_sentiment(doc, "negative_ratio")
 
 
-class SlackReactionType(AbstractType):
+class SlackEmojiType(AbstractType):
     attributes_keep = {
         ("event_type", str): ["data", "event", "type"],
         ("slack_timestamp", int): ["data", "event_time"],

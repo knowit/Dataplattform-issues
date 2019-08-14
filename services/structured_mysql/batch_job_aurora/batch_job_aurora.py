@@ -17,7 +17,7 @@ DEFAULT_TYPES = [
     "EventType",
     "GithubType",
     "SlackType",
-    "SlackReactionType",
+    "SlackEmojiType",
     "UBWType",
     "KnowitlabsType",
     "YrType",
