@@ -5,9 +5,11 @@
 [Board](https://github.com/knowit/Dataplattform/projects/1) med backlog etter sommeren
 
 ## Hente ut data fra dataplattformen
+
 [Swagger](https://knowit.github.io/Dataplattform/)
 
 ## Sende inn data
+
 [Sende inn data](https://github.com/knowit/Dataplattform/wiki/Legge-til-en-ny-datatype-(datakilde\))
 
 [Eksempel av innsending](https://github.com/knowit/Dataplattform/wiki/Eksempel:-sende-inn-data-til-dataplattformen)
