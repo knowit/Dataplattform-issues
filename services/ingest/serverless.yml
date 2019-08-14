@@ -22,7 +22,7 @@ provider:
   runtime: python3.7
   memorySize: 1024
   timeout: 5
-  apiKeys:
+  apiKeys: # IMPORTANT: Due to a quirk with how serverless generates CloudFormation, please add new keys at the bottom
     - name: ${self:custom.project}-ingest-key
     - name: ${self:custom.project}-slack_ingest-apikey
       value: ${self:custom.apikeys.slack_ingest}
@@ -55,7 +55,7 @@ functions:
     name: ${self:custom.ingest_lambda}
     description: Main ingest lambda
     role: ingestRole
-    layers:
+    layers: # TODO resolve this correctly
       - arn:aws:lambda:eu-central-1:275823250475:layer:Dataplattform-prod-timestamp_random:2
     package:
       include:
@@ -72,7 +72,7 @@ functions:
     name: ${self:custom.slack_ingest_lambda}
     description: Slack webhook endpoint
     role: ingestMiddleManRole
-    layers:
+    layers: # TODO resolve this correctly
       - arn:aws:lambda:eu-central-1:275823250475:layer:Dataplattform-prod-slack_signature_validator:1
     package:
       include:
