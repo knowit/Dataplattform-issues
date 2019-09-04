@@ -1,9 +1,0 @@
-{
-  "name": "dataplattform-ingest",
-  "description": "",
-  "version": "0.1.0",
-  "dependencies": {},
-  "devDependencies": {
-    "serverless-stack-output": "^0.2.3"
-  }
-}
